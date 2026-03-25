@@ -1,0 +1,21 @@
+# Secrets — never commit plaintext secrets
+*.secret
+*.key
+*.pem
+*.env
+.env.*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/settings.json
