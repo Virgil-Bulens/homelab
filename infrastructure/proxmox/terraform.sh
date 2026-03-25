@@ -20,6 +20,7 @@ fi
 TMPFILE="$(mktemp)"
 trap 'shred -u "$TMPFILE" 2>/dev/null || rm -f "$TMPFILE"' EXIT
 
+rm -f "$TMPFILE"
 gpg --quiet --decrypt --output "$TMPFILE" "$SECRETS_FILE"
 
 # init/validate/fmt don't accept -var-file
