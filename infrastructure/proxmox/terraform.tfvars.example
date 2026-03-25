@@ -1,0 +1,17 @@
+proxmox_endpoint  = "https://192.168.2.9:8006"
+proxmox_api_token = "terraform@pve!terraform=<paste-token-secret-here>"
+proxmox_node      = "pve"
+
+ssh_public_key = "ssh-ed25519 AAAA... your-key-comment"
+
+# Network — adjust to match your LAN
+network_gateway  = "192.168.2.1"
+dns_server       = "192.168.2.1"
+
+# Node IPs — reserve these in your router's DHCP exclusions
+control_plane_ip = "192.168.2.10"
+worker_ips       = ["192.168.2.11", "192.168.2.12"]
+
+# VM sizing — defaults are fine for most homelabs
+# control_plane_memory = 4096
+# worker_memory        = 8192
