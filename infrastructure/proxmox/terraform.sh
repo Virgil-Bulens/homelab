@@ -22,4 +22,10 @@ trap 'shred -u "$TMPFILE" 2>/dev/null || rm -f "$TMPFILE"' EXIT
 
 gpg --quiet --decrypt --output "$TMPFILE" "$SECRETS_FILE"
 
-terraform -chdir="$SCRIPT_DIR" "$@" -var-file="$TMPFILE"
+# init/validate/fmt don't accept -var-file
+COMMAND="${1:-}"
+if [[ "$COMMAND" =~ ^(init|validate|fmt)$ ]]; then
+  terraform -chdir="$SCRIPT_DIR" "$@"
+else
+  terraform -chdir="$SCRIPT_DIR" "$@" -var-file="$TMPFILE"
+fi
