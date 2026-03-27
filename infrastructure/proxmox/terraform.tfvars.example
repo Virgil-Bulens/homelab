@@ -8,10 +8,20 @@ ssh_public_key = "ssh-ed25519 AAAA... your-key-comment"
 network_gateway  = "192.168.2.1"
 dns_server       = "192.168.2.1"
 
-# Node IPs — reserve these in your router's DHCP exclusions
+# Node IPs
 control_plane_ip = "192.168.2.10"
 worker_ips       = ["192.168.2.11", "192.168.2.12"]
 
 # VM sizing — defaults are fine for most homelabs
 # control_plane_memory = 4096
 # worker_memory        = 8192
+
+# UniFi
+unifi_api_key      = "<paste-api-key-here>"
+unifi_api_url      = "https://192.168.1.1"
+unifi_network_name = "Servers"
+dns_domain         = "lan"
+
+# MAC addresses — defaults are fine; override if you need specific values
+# control_plane_mac = "02:ab:00:00:00:01"
+# worker_macs       = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]

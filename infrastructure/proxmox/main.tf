@@ -29,8 +29,9 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   network_device {
-    bridge = "vmbr0"
-    model  = "virtio"
+    bridge      = "vmbr0"
+    model       = "virtio"
+    mac_address = var.control_plane_mac
   }
 
   initialization {
@@ -88,8 +89,9 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   network_device {
-    bridge = "vmbr0"
-    model  = "virtio"
+    bridge      = "vmbr0"
+    model       = "virtio"
+    mac_address = var.worker_macs[count.index]
   }
 
   initialization {

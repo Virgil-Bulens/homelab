@@ -93,3 +93,41 @@ variable "worker_disk_size" {
   type        = number
   default     = 50
 }
+
+# UniFi
+
+variable "unifi_api_key" {
+  description = "UniFi controller API key"
+  type        = string
+  sensitive   = true
+}
+
+variable "unifi_api_url" {
+  description = "UniFi controller URL"
+  type        = string
+  default     = "https://192.168.1.1"
+}
+
+variable "unifi_network_name" {
+  description = "Name of the UniFi network the VMs live on (for DHCP reservations)"
+  type        = string
+  default     = "Servers"
+}
+
+variable "dns_domain" {
+  description = "Local DNS domain (e.g. lan)"
+  type        = string
+  default     = "lan"
+}
+
+variable "control_plane_mac" {
+  description = "MAC address for the control plane VM (locally administered)"
+  type        = string
+  default     = "02:ab:00:00:00:01"
+}
+
+variable "worker_macs" {
+  description = "MAC addresses for worker VMs — must match length of worker_ips"
+  type        = list(string)
+  default     = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]
+}
