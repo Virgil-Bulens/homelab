@@ -108,11 +108,6 @@ variable "unifi_api_url" {
   default     = "https://192.168.1.1"
 }
 
-variable "unifi_network_name" {
-  description = "Name of the UniFi network the VMs live on (for DHCP reservations)"
-  type        = string
-  default     = "Servers"
-}
 
 variable "dns_domain" {
   description = "Local DNS domain (e.g. lan)"

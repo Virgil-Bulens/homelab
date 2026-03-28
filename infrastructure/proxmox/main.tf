@@ -50,7 +50,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     }
 
     dns {
-      server = var.dns_server
+      servers = [var.dns_server]
     }
   }
 
@@ -110,7 +110,7 @@ resource "proxmox_virtual_environment_vm" "worker" {
     }
 
     dns {
-      server = var.dns_server
+      servers = [var.dns_server]
     }
   }
 
