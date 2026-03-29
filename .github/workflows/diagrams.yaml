@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  terravision:
+  terraform-graph:
     name: Terraform architecture diagram
     runs-on: ubuntu-latest
     permissions:
@@ -22,22 +22,29 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~1.6"
+          terraform_wrapper: false
 
       - name: Install Graphviz
-        run: sudo apt-get install -y graphviz libgraphviz-dev
+        run: sudo apt-get install -y graphviz
 
-      - name: Install Terravision
-        run: pip install terravision
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: terraform-providers-${{ hashFiles('infrastructure/proxmox/.terraform.lock.hcl') }}
+
+      - name: Terraform init
+        working-directory: infrastructure/proxmox
+        env:
+          TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
+        run: terraform init -backend=false
 
       - name: Generate diagram
-        run: |
-          terravision draw \
-            --source infrastructure/proxmox \
-            --format png,svg \
-            --outfile docs/infrastructure
+        working-directory: infrastructure/proxmox
+        run: terraform graph | dot -Tpng -o ../../docs/infrastructure.png
 
-      - name: Commit updated diagrams
+      - name: Commit updated diagram
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: regenerate infrastructure diagram [skip ci]"
-          file_pattern: "docs/infrastructure.*"
+          file_pattern: "docs/infrastructure.png"
