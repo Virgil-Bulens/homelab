@@ -9,6 +9,10 @@ GitOps homelab running on Proxmox (Intel NUC i7, 64 GB RAM). Built as a learning
 - **Observability** — metrics, logs, and alerting across the full stack
 - **Documentation-first** — decisions and architecture captured alongside the code
 
+## Infrastructure
+
+See [infrastructure diagram](docs/infrastructure.md) — auto-generated from `infrastructure/proxmox/*.tf` on every push.
+
 ## Tech stack
 
 | Layer | Tool |
