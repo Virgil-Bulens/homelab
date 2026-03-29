@@ -50,6 +50,14 @@ jobs:
         working-directory: infrastructure/proxmox
         run: terramaid run --output ../../docs/infrastructure.md
 
+      - name: Strip variable and provider nodes
+        run: |
+          sed -i \
+            -e '/var\./d' \
+            -e '/provider_registry/d' \
+            -e '/provider: registry/d' \
+            docs/infrastructure.md
+
       - name: Commit updated diagram
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
