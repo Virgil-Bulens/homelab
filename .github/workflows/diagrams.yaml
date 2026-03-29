@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  terramaid:
+  generate:
     name: Terraform architecture diagram
     runs-on: ubuntu-latest
     permissions:
@@ -18,49 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~1.6"
-          terraform_wrapper: false
-
-      - name: Cache Terraform providers
-        uses: actions/cache@v4
-        with:
-          path: ~/.terraform.d/plugin-cache
-          key: terraform-providers-${{ hashFiles('infrastructure/proxmox/.terraform.lock.hcl') }}
-
-      - name: Terraform init
-        working-directory: infrastructure/proxmox
-        env:
-          TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
-        run: |
-          mkdir -p ~/.terraform.d/plugin-cache
-          terraform init -backend=false
-
-      - name: Install Terramaid
-        run: |
-          ARCH=$([ "${{ runner.arch }}" = "X64" ] && echo "x86_64" || echo "arm64")
-          VERSION=$(curl -s https://api.github.com/repos/RoseSecurity/Terramaid/releases/latest | grep tag_name | cut -d '"' -f4)
-          curl -sL "https://github.com/RoseSecurity/Terramaid/releases/download/${VERSION}/Terramaid_Linux_${ARCH}.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/Terramaid /usr/local/bin/terramaid
-          terramaid --version
+      - name: Install python-hcl2
+        run: pip install python-hcl2
 
       - name: Generate Mermaid diagram
-        working-directory: infrastructure/proxmox
-        run: terramaid run --output ../../docs/infrastructure.md
-
-      - name: Strip variable, output, and provider nodes
-        run: |
-          sed -i \
-            -e '/var\./d' \
-            -e '/var_/d' \
-            -e '/output_/d' \
-            -e '/provider_registry/d' \
-            -e '/provider: registry/d' \
-            -e '/local_servers/d' \
-            -e '/root -->/d' \
-            docs/infrastructure.md
+        run: python scripts/generate-diagram.py infrastructure/proxmox docs/infrastructure.md
 
       - name: Commit updated diagram
         uses: stefanzweifel/git-auto-commit-action@v5
