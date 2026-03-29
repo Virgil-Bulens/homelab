@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - infrastructure/proxmox/**.tf
+  workflow_dispatch:
 
 jobs:
   terravision:
