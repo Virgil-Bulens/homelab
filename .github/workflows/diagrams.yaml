@@ -1,0 +1,37 @@
+name: Generate diagrams
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - infrastructure/proxmox/**.tf
+
+jobs:
+  terravision:
+    name: Terraform architecture diagram
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Graphviz
+        run: sudo apt-get install -y graphviz libgraphviz-dev
+
+      - name: Install Terravision
+        run: pip install terravision
+
+      - name: Generate diagram
+        run: |
+          terravision draw \
+            --source infrastructure/proxmox \
+            --format png,svg \
+            --outfile docs/infrastructure
+
+      - name: Commit updated diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: regenerate infrastructure diagram [skip ci]"
+          file_pattern: "docs/infrastructure.*"
