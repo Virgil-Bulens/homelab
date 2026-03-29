@@ -34,14 +34,17 @@ jobs:
         working-directory: infrastructure/proxmox
         env:
           TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
-        run: terraform init -backend=false
+        run: |
+          mkdir -p ~/.terraform.d/plugin-cache
+          terraform init -backend=false
 
       - name: Install Terramaid
         run: |
           ARCH=$([ "${{ runner.arch }}" = "X64" ] && echo "x86_64" || echo "arm64")
           VERSION=$(curl -s https://api.github.com/repos/RoseSecurity/Terramaid/releases/latest | grep tag_name | cut -d '"' -f4)
-          curl -sL "https://github.com/RoseSecurity/Terramaid/releases/download/${VERSION}/Terramaid_Linux_${ARCH}.tar.gz" | tar xz
-          sudo mv Terramaid /usr/local/bin/
+          curl -sL "https://github.com/RoseSecurity/Terramaid/releases/download/${VERSION}/Terramaid_Linux_${ARCH}.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/Terramaid /usr/local/bin/terramaid
+          terramaid --version
 
       - name: Generate Mermaid diagram
         working-directory: infrastructure/proxmox
