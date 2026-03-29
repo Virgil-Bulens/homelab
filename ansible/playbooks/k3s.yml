@@ -1,0 +1,61 @@
+---
+# Play 1: Install k3s server on the control plane
+- name: Install k3s control plane
+  hosts: control_plane
+  become: true
+  tasks:
+    - name: Install k3s server
+      ansible.builtin.shell:
+        cmd: |
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="{{ k3s_version }}" \
+            INSTALL_K3S_EXEC="server \
+              --flannel-backend=none \
+              --disable-kube-proxy \
+              --disable=traefik \
+              --disable=servicelb \
+              --cluster-cidr={{ k3s_cluster_cidr }} \
+              --service-cidr={{ k3s_service_cidr }} \
+              --bind-address={{ ansible_host }} \
+              --advertise-address={{ ansible_host }} \
+              --node-ip={{ ansible_host }}" \
+            sh -
+        creates: /usr/local/bin/k3s
+
+    - name: Wait for k3s to be ready
+      ansible.builtin.command: k3s kubectl get nodes
+      register: node_status
+      until: node_status.rc == 0
+      retries: 20
+      delay: 5
+
+# Play 2: Fetch the join token from the control plane
+- name: Fetch k3s join token
+  hosts: control_plane
+  become: true
+  tasks:
+    - name: Read node token
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token_raw
+
+    - name: Set token fact
+      ansible.builtin.set_fact:
+        k3s_token: "{{ k3s_token_raw['content'] | b64decode | trim }}"
+
+# Play 3: Install k3s agents on workers
+- name: Install k3s workers
+  hosts: workers
+  become: true
+  vars:
+    control_plane_ip: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}"
+    k3s_token: "{{ hostvars[groups['control_plane'][0]]['k3s_token'] }}"
+  tasks:
+    - name: Install k3s agent
+      ansible.builtin.shell:
+        cmd: |
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="{{ k3s_version }}" \
+            K3S_URL="https://{{ control_plane_ip }}:6443" \
+            K3S_TOKEN="{{ k3s_token }}" \
+            INSTALL_K3S_EXEC="agent --node-ip={{ ansible_host }}" \
+            sh -
+        creates: /usr/local/bin/k3s

@@ -10,6 +10,10 @@ terraform {
       source  = "ubiquiti-community/unifi"
       version = "~> 0.41"
     }
+    ansible = {
+      source  = "ansible/ansible"
+      version = "~> 1.3"
+    }
   }
 }
 
