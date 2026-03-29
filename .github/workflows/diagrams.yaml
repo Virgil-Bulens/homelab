@@ -50,12 +50,16 @@ jobs:
         working-directory: infrastructure/proxmox
         run: terramaid run --output ../../docs/infrastructure.md
 
-      - name: Strip variable and provider nodes
+      - name: Strip variable, output, and provider nodes
         run: |
           sed -i \
             -e '/var\./d' \
+            -e '/var_/d' \
+            -e '/output_/d' \
             -e '/provider_registry/d' \
             -e '/provider: registry/d' \
+            -e '/local_servers/d' \
+            -e '/root -->/d' \
             docs/infrastructure.md
 
       - name: Commit updated diagram
