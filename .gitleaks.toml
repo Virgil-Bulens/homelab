@@ -1,0 +1,5 @@
+[allowlist]
+description = "Ignore encrypted SealedSecret values — ciphertext has high entropy but is not a real secret"
+paths = [
+    '''infrastructure/.*/.*-secret\.yaml'''
+]

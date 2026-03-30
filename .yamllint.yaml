@@ -1,0 +1,11 @@
+---
+extends: default
+rules:
+  line-length:
+    max: 150
+    # SealedSecret encrypted values exceed line limits — ignore them
+    ignore: |
+      infrastructure/**/*-secret.yaml
+  truthy:
+    allowed-values: ["true", "false"]
+  document-start: enable

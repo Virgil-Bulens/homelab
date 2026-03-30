@@ -25,10 +25,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ibiqlik/action-yamllint@v3
         with:
-          config_data: |
-            extends: default
-            rules:
-              line-length:
-                max: 150
-              truthy:
-                allowed-values: ["true", "false"]
+          config_file: .yamllint.yaml
