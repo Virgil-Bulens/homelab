@@ -1,0 +1,3 @@
+argo-cd:
+  server:
+    insecure: true  # TLS terminated at Gateway API + cert-manager

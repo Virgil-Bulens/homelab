@@ -149,4 +149,28 @@ kubectl get nodes
 
 ### 5. Bootstrap ArgoCD
 
-> _To be documented._
+Install ArgoCD into the cluster directly via Helm — this is the last manual install step:
+
+```bash
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
+helm install argocd argo/argo-cd \
+  --namespace argocd \
+  --create-namespace \
+  --version 7.7.0 \
+  --set server.insecure=true
+```
+
+Wait for ArgoCD to be ready:
+
+```bash
+kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=120s
+```
+
+Apply the root Application — this is the single manual `kubectl apply` that hands control to ArgoCD:
+
+```bash
+kubectl apply -f bootstrap/root-application.yaml
+```
+
+ArgoCD will discover `clusters/home/infrastructure/`, create all child Applications, and begin reconciling the cluster to match Git. From this point on, all changes go through Git.
