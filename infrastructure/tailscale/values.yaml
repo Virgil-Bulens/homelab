@@ -1,0 +1,3 @@
+tailscale-operator:
+  operatorConfig:
+    hostname: "homelab-operator"
