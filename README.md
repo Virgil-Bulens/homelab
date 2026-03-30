@@ -157,8 +157,7 @@ helm repo update
 helm install argocd argo/argo-cd \
   --namespace argocd \
   --create-namespace \
-  --version 7.7.0 \
-  --set server.insecure=true
+  --version 7.7.0
 ```
 
 Wait for ArgoCD to be ready:

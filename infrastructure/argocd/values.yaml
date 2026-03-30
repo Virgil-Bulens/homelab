@@ -1,3 +1,2 @@
-argo-cd:
-  server:
-    insecure: true  # TLS terminated at Gateway API + cert-manager
+argo-cd: {}
+# server.insecure will be enabled once Gateway API + cert-manager are in place
