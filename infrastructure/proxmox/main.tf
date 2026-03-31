@@ -55,6 +55,10 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   on_boot = true
+
+  lifecycle {
+    ignore_changes = [clone, initialization, vga, serial_device]
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "worker" {
@@ -115,4 +119,8 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   on_boot = true
+
+  lifecycle {
+    ignore_changes = [clone, initialization, vga, serial_device]
+  }
 }
