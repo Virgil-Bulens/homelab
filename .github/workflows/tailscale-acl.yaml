@@ -1,0 +1,43 @@
+---
+name: Tailscale ACL
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/tailscale-acl/acl.hujson"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/tailscale-acl/acl.hujson"
+  workflow_dispatch:
+
+jobs:
+  acl:
+    name: Test / Apply
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test ACL (PRs)
+        if: github.event_name == 'pull_request'
+        uses: tailscale/gitops-acl-action@v1
+        with:
+          oauth-client-id: ${{ secrets.TS_ACL_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_ACL_OAUTH_SECRET }}
+          tailnet: ${{ secrets.TS_TAILNET }}
+          policy-file: infrastructure/tailscale-acl/acl.hujson
+          action: test
+
+      - name: Apply ACL (main)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: tailscale/gitops-acl-action@v1
+        with:
+          oauth-client-id: ${{ secrets.TS_ACL_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_ACL_OAUTH_SECRET }}
+          tailnet: ${{ secrets.TS_TAILNET }}
+          policy-file: infrastructure/tailscale-acl/acl.hujson
+          action: apply

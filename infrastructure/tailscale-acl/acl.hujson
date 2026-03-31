@@ -1,0 +1,38 @@
+// Tailscale ACL for the homelab tailnet.
+// Managed via GitOps — edit here, CI pushes to Tailscale.
+{
+	// Define the tags which can be applied to devices and by which users.
+	"tagOwners": {
+		"tag:homelab":      [],
+		"tag:k8s-operator": ["autogroup:admin"],
+		"tag:ci":           ["autogroup:admin"],
+	},
+
+	// Auto-approve subnet routes advertised by tagged devices.
+	"autoApprovers": {
+		"routes": {
+			"192.168.2.9/32": ["tag:k8s-operator"],
+			"192.168.1.1/32": ["tag:k8s-operator"],
+		},
+	},
+
+	// Access control grants.
+	"grants": [
+		// Allow all connections within the tailnet.
+		{
+			"src": ["*"],
+			"dst": ["*"],
+			"ip":  ["*"],
+		},
+	],
+
+	// Tailscale SSH.
+	"ssh": [
+		{
+			"action": "check",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self"],
+			"users":  ["autogroup:nonroot", "root"],
+		},
+	],
+}
