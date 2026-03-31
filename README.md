@@ -37,7 +37,10 @@ clusters/
   home/
     infrastructure/   # ArgoCD Applications for core infrastructure
     apps/             # ArgoCD Applications for user-facing apps
-infrastructure/       # Helm values and Kubernetes manifests per component
+infrastructure/       # Helm values, Kubernetes manifests, and Terraform per component
+  proxmox/            # Terraform — Proxmox VMs + Ansible inventory
+  unifi/              # Terraform — UniFi DNS records and DHCP reservations
+  tailscale-acl/      # Tailscale ACL (HuJSON) — applied to tailnet via CI
   argocd/
   cilium/
   cert-manager/
@@ -75,14 +78,20 @@ This repo uses the ArgoCD **App of Apps** pattern. A root Application in `cluste
 
 - Proxmox host reachable at `192.168.2.x`
 - SSH key in `~/.ssh/` with access to all nodes
-- `PROXMOX_USERNAME` and `PROXMOX_PASSWORD` env vars set (for Terraform)
+- Terraform variables available (see `infrastructure/proxmox/terraform.tfvars.example` and `infrastructure/unifi/terraform.tfvars.example`)
 
 ### 1. Provision infrastructure
+
+Proxmox VMs and UniFi DNS/DHCP records are managed in separate Terraform root modules. In CI, both run automatically on push. To run locally:
 
 ```bash
 cd infrastructure/proxmox
 terraform init
 terraform apply
+
+cd ../unifi
+terraform init
+terraform apply -parallelism=1  # required: provider has a concurrency limitation
 ```
 
 ### 2. Install k3s (via Ansible)
