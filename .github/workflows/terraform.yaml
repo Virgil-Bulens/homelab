@@ -6,15 +6,17 @@ on:
     branches: [main]
     paths:
       - "infrastructure/proxmox/**"
+      - "infrastructure/unifi/**"
   pull_request:
     branches: [main]
     paths:
       - "infrastructure/proxmox/**"
+      - "infrastructure/unifi/**"
   workflow_dispatch:
 
 jobs:
-  terraform:
-    name: Plan / Apply
+  proxmox:
+    name: Proxmox — Plan / Apply
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -23,7 +25,6 @@ jobs:
       TF_VAR_proxmox_endpoint: ${{ secrets.TF_VAR_PROXMOX_ENDPOINT }}
       TF_VAR_proxmox_api_token: ${{ secrets.TF_VAR_PROXMOX_API_TOKEN }}
       TF_VAR_ssh_public_key: ${{ secrets.TF_VAR_SSH_PUBLIC_KEY }}
-      TF_VAR_unifi_api_key: ${{ secrets.TF_VAR_UNIFI_API_KEY }}
 
     steps:
       - name: Checkout
@@ -52,3 +53,40 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
+
+  unifi:
+    name: UniFi — Plan / Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/unifi
+    env:
+      TF_VAR_unifi_api_key: ${{ secrets.TF_VAR_UNIFI_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
+          tags: tag:ci
+          args: --accept-routes
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="access_key=${{ secrets.R2_ACCESS_KEY_ID }}" \
+            -backend-config="secret_key=${{ secrets.R2_SECRET_ACCESS_KEY }}"
+
+      - name: Terraform Plan
+        run: terraform plan -parallelism=1
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -parallelism=1

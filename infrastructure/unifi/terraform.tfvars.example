@@ -1,0 +1,12 @@
+unifi_api_key = "<paste-api-key-here>"
+unifi_api_url = "https://192.168.1.1"
+dns_domain    = "lan"
+
+# Node IPs and MACs — must match infrastructure/proxmox values
+control_plane_ip  = "192.168.2.10"
+control_plane_mac = "02:ab:00:00:00:01"
+worker_ips        = ["192.168.2.11", "192.168.2.12"]
+worker_macs       = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]
+
+# UniFi network ID for servers VLAN (hardcoded: data source broken on UDM Pro 3.x)
+# servers_network_id = "604e678a8729b304a1a35067"
