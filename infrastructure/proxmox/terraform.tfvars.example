@@ -15,3 +15,7 @@ worker_ips       = ["192.168.2.11", "192.168.2.12"]
 # VM sizing — defaults are fine for most homelabs
 # control_plane_memory = 4096
 # worker_memory        = 8192
+
+# MAC addresses — defaults are fine; override if you need specific values
+# control_plane_mac = "02:ab:00:00:00:01"
+# worker_macs       = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]

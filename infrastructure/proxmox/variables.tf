@@ -94,3 +94,15 @@ variable "worker_disk_size" {
   type        = number
   default     = 50
 }
+
+variable "control_plane_mac" {
+  description = "MAC address for the control plane VM (locally administered)"
+  type        = string
+  default     = "02:ab:00:00:00:01"
+}
+
+variable "worker_macs" {
+  description = "MAC addresses for worker VMs — must match length of worker_ips"
+  type        = list(string)
+  default     = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]
+}
