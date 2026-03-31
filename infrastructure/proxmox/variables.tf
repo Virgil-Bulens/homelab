@@ -24,6 +24,7 @@ variable "template_vm_id" {
 variable "ssh_public_key" {
   description = "SSH public key to inject into all VMs"
   type        = string
+  sensitive   = true
 }
 
 variable "network_gateway" {
@@ -101,6 +102,7 @@ variable "unifi_api_key" {
   type        = string
   sensitive   = true
 }
+
 
 variable "unifi_api_url" {
   description = "UniFi controller URL"
