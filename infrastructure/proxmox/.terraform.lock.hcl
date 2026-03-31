@@ -6,6 +6,7 @@ provider "registry.terraform.io/ansible/ansible" {
   constraints = "~> 1.3"
   hashes = [
     "h1:8UUj0/Wh1ouz1LU9sg/m4G9bRxMEW+COPUuUN0dwD0s=",
+    "h1:B5hHbn7cL+yJ4xU7eTaqSsKL5jOtUBO7/vWoDcOTfuc=",
     "zh:0d45166bf99e50a28a1221d17a13bf8fd461109e15675984768403f7c429fe09",
     "zh:31cb7f7745f2d5ca88936ba3c86e408f242ed0754f4de02f85dc821cf8b46a3c",
     "zh:3c9d29e378426a1f9926deb2aa71bcac27a50af46e0948896bfdcde5a9969e76",
@@ -28,6 +29,7 @@ provider "registry.terraform.io/bpg/proxmox" {
   constraints = "~> 0.73"
   hashes = [
     "h1:H5sYFdRa0gc9tC5mnjdlU08B4ltP38DBpQQGgiG/VX4=",
+    "h1:UyNgTFGjDo0Kb9uIM/XrhO0F09eALXyaRqLsFM16XKo=",
     "zh:2ac2a659c1d9ceb180337ccc2ad86427383420230b2cd298f821cba9cbf5645c",
     "zh:2f8145d697bd4efbc1ffd3346d686866e104b21303dec3ff2ce0f9f501ddc9be",
     "zh:2fd459efb1b6658891e290111ca85d906eef42fe27c21af96b95442da8d461de",
@@ -50,6 +52,7 @@ provider "registry.terraform.io/ubiquiti-community/unifi" {
   constraints = "~> 0.41"
   hashes = [
     "h1:gZLa2/SRB4S5NeqZj6EXgsIoCoUZ2RgfExhkOGYsnz4=",
+    "h1:qRFnztw0TZG/RQVLHe2Pjz5U/IOY0g+8ESV1AwzIEWU=",
     "zh:1f45ce17895b191156c1556cb704e022c903afce13d4d0eb9c7a8c2ba1d5c882",
     "zh:25350e49be814fa80b0831d598773ef5ca6349875fc84ae8c68c5aeecc8546a6",
     "zh:2782b11d6d05a30a794b627026057f2a5cd1795c658e0fab35d3b779aa238f42",
