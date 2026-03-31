@@ -1,0 +1,53 @@
+---
+name: Terraform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/proxmox/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/proxmox/**"
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Plan / Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/proxmox
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
+          args: --accept-routes
+
+      - name: Write tfvars
+        run: echo "${{ secrets.TF_VARS }}" > /tmp/proxmox.tfvars
+
+      - name: Terraform Init
+        run: terraform init
+          -backend-config="access_key=${{ secrets.R2_ACCESS_KEY_ID }}"
+          -backend-config="secret_key=${{ secrets.R2_SECRET_ACCESS_KEY }}"
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=/tmp/proxmox.tfvars
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -var-file=/tmp/proxmox.tfvars
+
+      - name: Cleanup tfvars
+        if: always()
+        run: rm -f /tmp/proxmox.tfvars
