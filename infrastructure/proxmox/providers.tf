@@ -22,7 +22,7 @@ terraform {
     }
     unifi = {
       source  = "ubiquiti-community/unifi"
-      version = "~> 0.41"
+      version = "= 0.41.24" # pinned: 0.41.25 has concurrent map writes panic in logger
     }
     ansible = {
       source  = "ansible/ansible"
