@@ -1,0 +1,5 @@
+cert-manager:
+  crds:
+    enabled: true
+  # Required for cert-manager to watch Gateway/HTTPRoute objects and auto-issue certs
+  featureGates: "ExperimentalGatewayAPISupport=true"
