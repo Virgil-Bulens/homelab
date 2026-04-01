@@ -1,4 +1,4 @@
-# DNS records
+# DNS records and static client assignments
 
 resource "unifi_dns_record" "control_plane" {
   name        = "k3s-cp-1.${var.dns_domain}"
