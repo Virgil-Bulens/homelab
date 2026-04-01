@@ -78,14 +78,6 @@ jobs:
           tags: tag:ci
           version: 1.94.2
 
-      - name: Wait for subnet route to UniFi controller
-        run: |
-          for i in $(seq 1 12); do
-            ping -c 1 -W 2 192.168.1.1 && break
-            echo "Attempt $i: route not yet available, waiting..."
-            sleep 5
-          done
-
       - name: Terraform Init
         run: |
           terraform init \
