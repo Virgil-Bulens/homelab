@@ -40,7 +40,6 @@ jobs:
           oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
           tags: tag:ci
           version: 1.94.2
-          args: --accept-routes
 
       - name: Terraform Init
         run: |
@@ -78,7 +77,6 @@ jobs:
           oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
           tags: tag:ci
           version: 1.94.2
-          args: --accept-routes
 
       - name: Wait for subnet route to UniFi controller
         run: |
