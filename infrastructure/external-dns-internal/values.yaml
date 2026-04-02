@@ -13,6 +13,10 @@ external-dns:
   # Only create/update — never delete records (safer for shared zone)
   policy: upsert-only
 
+  # Point external-dns at the webhook sidecar's actual port (8080, not the default 8888)
+  extraArgs:
+    - --webhook-provider-url=http://localhost:8080
+
   # UniFi webhook sidecar
   provider:
     name: webhook
