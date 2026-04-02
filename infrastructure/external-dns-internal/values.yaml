@@ -1,0 +1,45 @@
+external-dns:
+  # Only manage records for virg.be
+  domainFilters:
+    - virg.be
+
+  # Watch HTTPRoutes — creates A records when an HTTPRoute is annotated
+  sources:
+    - gateway-httproute
+
+  # Identifies records owned by this instance; must differ from external instance
+  txtOwnerId: homelab-internal
+
+  # Only create/update — never delete records (safer for shared zone)
+  policy: upsert-only
+
+  # UniFi webhook sidecar
+  provider:
+    name: webhook
+    webhook:
+      image:
+        repository: ghcr.io/kashalls/external-dns-unifi-webhook
+        tag: v0.2.3
+      env:
+        - name: UNIFI_HOST
+          value: https://192.168.1.1
+        - name: UNIFI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: external-dns-unifi
+              key: api-key
+        # Skip TLS verification — UniFi controller uses a self-signed cert
+        - name: UNIFI_VERIFY_SSL
+          value: "false"
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: http-webhook
+        initialDelaySeconds: 10
+        timeoutSeconds: 5
+      readinessProbe:
+        httpGet:
+          path: /readyz
+          port: http-webhook
+        initialDelaySeconds: 10
+        timeoutSeconds: 5
