@@ -7,11 +7,13 @@ on:
     paths:
       - "infrastructure/proxmox/**"
       - "infrastructure/unifi/**"
+      - "infrastructure/cloudflare/**"
   pull_request:
     branches: [main]
     paths:
       - "infrastructure/proxmox/**"
       - "infrastructure/unifi/**"
+      - "infrastructure/cloudflare/**"
   workflow_dispatch:
 
 jobs:
@@ -90,3 +92,34 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -parallelism=1
+
+  cloudflare:
+    name: Cloudflare — Plan / Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/cloudflare
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.TF_VAR_CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="access_key=${{ secrets.R2_ACCESS_KEY_ID }}" \
+            -backend-config="secret_key=${{ secrets.R2_SECRET_ACCESS_KEY }}"
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
