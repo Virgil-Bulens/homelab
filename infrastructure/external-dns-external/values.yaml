@@ -1,0 +1,30 @@
+external-dns:
+  # Only manage records for virg.be
+  domainFilters:
+    - virg.be
+
+  # Watch HTTPRoutes — creates per-app CNAMEs in Cloudflare for each HTTPRoute hostname
+  sources:
+    - gateway-httproute
+
+  # Identifies records owned by this instance; must differ from internal instance
+  txtOwnerId: homelab-external
+
+  # Only create/update — never delete records
+  policy: upsert-only
+
+  provider:
+    name: cloudflare
+
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: external-dns-cloudflare
+          key: api-token
+
+  extraArgs:
+    # Proxy records through Cloudflare (orange cloud) — required for tunnel routing
+    - --cloudflare-proxied
+    # Target each HTTPRoute hostname at the tunnel CNAME
+    - --target=80cf466e-1ffb-48c3-9953-718e7e9cf718.cfargotunnel.com
