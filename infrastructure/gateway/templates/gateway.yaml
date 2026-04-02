@@ -1,0 +1,31 @@
+---
+# The single cluster-wide Gateway. All HTTPRoutes across all namespaces attach to this.
+# TLS is terminated here using the wildcard cert — individual apps do not manage their own certs.
+# Wave 1 ensures the Certificate secret exists before the Gateway tries to reference it.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: homelab
+  namespace: networking
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      port: 443
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: virg-be-wildcard-tls
+            namespace: networking

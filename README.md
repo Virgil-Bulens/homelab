@@ -22,8 +22,9 @@ See [infrastructure diagram](docs/infrastructure.md) — auto-generated from `in
 | CNI | Cilium |
 | Remote access | Tailscale |
 | Ingress | Gateway API (via Cilium) |
-| Certificates | cert-manager + Let's Encrypt |
-| DNS | external-dns (Unifi provider) |
+| Public ingress | Cloudflare Tunnel |
+| Certificates | cert-manager + Let's Encrypt (DNS-01 via Cloudflare) |
+| DNS | Split-horizon: external-dns (UniFi, internal LAN) + external-dns (Cloudflare, public internet) |
 | Observability | Grafana + Prometheus + Loki |
 | Storage | Longhorn |
 | Secrets | Sealed Secrets |
@@ -42,9 +43,12 @@ infrastructure/       # Helm values, Kubernetes manifests, and Terraform per com
   unifi/              # Terraform — UniFi DNS records and DHCP reservations
   tailscale-acl/      # Tailscale ACL (HuJSON) — applied to tailnet via CI
   argocd/
-  cilium/
+  cilium/             # Bootstrap reference values (helm upgrade, not ArgoCD)
+  cilium-config/      # ArgoCD-managed Cilium CRD instances (LoadBalancer IP pool)
   cert-manager/
-  external-dns/
+  gateway/            # networking namespace, wildcard Certificate, Gateway resource
+  external-dns-internal/  # external-dns → UniFi (internal LAN DNS)
+  external-dns-external/  # external-dns → Cloudflare (public internet DNS)
   sealed-secrets/
   tailscale/
   monitoring/
@@ -66,7 +70,7 @@ This repo uses the ArgoCD **App of Apps** pattern. A root Application in `cluste
 2. Install k3s with Cilium as CNI
 3. Bootstrap ArgoCD — all subsequent installs are managed via ArgoCD
 4. Sealed Secrets controller + Tailscale operator
-5. Gateway API + cert-manager + external-dns
+5. Gateway API CRDs (bootstrap) + Cilium upgrade + cert-manager + Gateway + split-horizon external-dns (UniFi internal + Cloudflare external) + Cloudflare Tunnel
 6. Observability stack (kube-prometheus-stack + Loki)
 7. Authentik (SSO for all services)
 8. Longhorn (persistent storage)
@@ -182,3 +186,22 @@ kubectl apply -f bootstrap/root-application.yaml
 ```
 
 ArgoCD will discover `clusters/home/infrastructure/`, create all child Applications, and begin reconciling the cluster to match Git. From this point on, all changes go through Git.
+
+### 6. Enable Gateway API
+
+Gateway API CRDs and the Cilium upgrade are bootstrap steps — applied directly like Cilium and ArgoCD.
+
+Install Gateway API CRDs (v1.2.1 — matches Cilium 1.19.x):
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+```
+
+Upgrade Cilium to enable the Gateway API controller:
+
+```bash
+helm repo add cilium https://helm.cilium.io/
+helm upgrade cilium cilium/cilium -n kube-system -f infrastructure/cilium/values.yaml
+```
+
+ArgoCD then manages the `CiliumLoadBalancerIPPool`, `networking` namespace, wildcard `Certificate`, and `Gateway` resources via the `cilium-config` and `gateway` Applications.

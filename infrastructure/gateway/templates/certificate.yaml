@@ -1,0 +1,19 @@
+---
+# Wildcard certificate for *.virg.be — issued via DNS-01 (Cloudflare).
+# Using staging issuer first to validate the DNS-01 flow without hitting Let's Encrypt rate limits.
+# Switch issuerRef.name to letsencrypt-prod once staging issues successfully.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: virg-be-wildcard
+  namespace: networking
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  secretName: virg-be-wildcard-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+    - "virg.be"
+    - "*.virg.be"

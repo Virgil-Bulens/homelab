@@ -1,0 +1,5 @@
+---
+apiVersion: v2
+name: cilium-config
+version: 1.0.0
+description: Cilium cluster configuration — LoadBalancer IP pool and other CRD instances managed via ArgoCD.
