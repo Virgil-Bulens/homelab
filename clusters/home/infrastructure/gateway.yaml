@@ -10,9 +10,7 @@ spec:
     repoURL: https://github.com/Virgil-Bulens/homelab
     targetRevision: HEAD
     path: infrastructure/gateway
-    helm:
-      valueFiles:
-        - values.yaml
+
   destination:
     server: https://kubernetes.default.svc
     namespace: networking
