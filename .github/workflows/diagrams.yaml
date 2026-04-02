@@ -16,7 +16,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install python-hcl2
         run: pip install python-hcl2
