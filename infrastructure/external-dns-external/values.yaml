@@ -26,5 +26,5 @@ external-dns:
   extraArgs:
     # Proxy records through Cloudflare (orange cloud) — required for tunnel routing
     - --cloudflare-proxied
-    # Target each HTTPRoute hostname at the tunnel CNAME
-    - --target=80cf466e-1ffb-48c3-9953-718e7e9cf718.cfargotunnel.com
+    # Point all created records at the tunnel CNAME
+    - --default-targets=80cf466e-1ffb-48c3-9953-718e7e9cf718.cfargotunnel.com
