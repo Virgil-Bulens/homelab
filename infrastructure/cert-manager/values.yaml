@@ -3,3 +3,9 @@ cert-manager:
     enabled: true
   # Required for cert-manager to watch Gateway/HTTPRoute objects and auto-issue certs
   featureGates: "ExperimentalGatewayAPISupport=true"
+  # Use public resolvers for DNS01 propagation checks — the cluster nodes forward
+  # through a local resolver (192.168.2.1) that doesn't reliably resolve external
+  # TXT records. Cloudflare and Google DNS are used directly instead.
+  extraArgs:
+    - --dns01-recursive-nameservers=1.1.1.1:53,8.8.8.8:53
+    - --dns01-recursive-nameservers-only=true
