@@ -3,7 +3,7 @@
 # Cilium is NOT managed by ArgoCD (it must exist before ArgoCD can run).
 #
 # To apply changes, first ensure Gateway API CRDs are installed:
-#   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+#   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
 #
 # Then upgrade Cilium:
 #   helm upgrade cilium cilium/cilium -n kube-system -f infrastructure/cilium/values.yaml
