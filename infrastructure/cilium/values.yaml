@@ -7,6 +7,21 @@
 #
 # Then upgrade Cilium:
 #   helm upgrade cilium cilium/cilium -n kube-system -f infrastructure/cilium/values.yaml
+authentication:
+  enabled: true
+  mutual:
+    spire:
+      # Cilium manages the SPIRE install. Trust domain matches the cluster name.
+      enabled: true
+      install:
+        enabled: true
+        # PVC-backed storage — survives SPIRE server restarts.
+        # Uses local-path provisioner (k3s default). Loss of the PVC means
+        # all agents must re-attest and all entries must be re-registered.
+        server:
+          dataStorage:
+            enabled: true
+            storageClass: local-path
 cluster:
   name: homelab
 gatewayAPI:
