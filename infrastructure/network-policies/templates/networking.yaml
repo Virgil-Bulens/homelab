@@ -1,7 +1,8 @@
 ---
 # The networking namespace hosts the Gateway object and its wildcard TLS certificate.
 # No pods run here — the Gateway is implemented by cilium-envoy in kube-system.
-# This policy is a no-op placeholder to document that decision; it selects no endpoints.
+# Cilium rejects policies with empty ingress/egress arrays.
+# This policy selects a label that no pod will ever have, so it is effectively a no-op.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -11,5 +12,6 @@ spec:
   endpointSelector:
     matchLabels:
       no-pods-in-this-namespace: "true"
-  ingress: []
-  egress: []
+  ingress:
+    - fromEntities:
+        - kube-apiserver

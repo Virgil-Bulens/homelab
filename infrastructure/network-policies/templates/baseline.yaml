@@ -1,4 +1,25 @@
 ---
+# Allow kubelet health probes from the node host to all pods.
+# Kubelet liveness/readiness probes originate from the node's host network.
+# In native routing mode, the source IP is the cilium_host interface IP (in 10.42.0.0/16).
+# Despite ipcache mapping this to identity=1 (host), the eBPF veth ingress hook
+# classifies it as srcLabel=2 (reserved:world) before the ipcache lookup completes.
+# fromEntities host/remote-node alone is insufficient — add CIDR rules to cover both
+# the pod CIDR (cilium_host IPs) and the node physical subnet.
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-kubelet-probes
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEntities:
+        - host
+        - remote-node
+    - fromCIDR:
+        - 10.42.0.0/16
+        - 192.168.2.0/24
+---
 # Allow all pods to reach CoreDNS for name resolution.
 # Without this, every pod loses DNS as soon as namespace policies apply default-deny.
 apiVersion: "cilium.io/v2"

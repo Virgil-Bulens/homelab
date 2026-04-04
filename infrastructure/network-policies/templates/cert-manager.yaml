@@ -44,7 +44,8 @@ spec:
               protocol: TCP
 ---
 # cert-manager cainjector: watches secrets and injects CA bundles.
-# Only needs API server access (covered by baseline).
+# Only needs API server access (covered by baseline allow-kube-apiserver).
+# Cilium rejects policies with egress: [] — omit the key entirely when no egress is needed.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -54,4 +55,6 @@ spec:
   endpointSelector:
     matchLabels:
       app.kubernetes.io/name: cainjector
-  egress: []
+  ingress:
+    - fromEntities:
+        - kube-apiserver
