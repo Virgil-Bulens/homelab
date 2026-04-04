@@ -6,7 +6,9 @@
 #   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
 #
 # Then upgrade Cilium:
-#   helm upgrade cilium cilium/cilium -n kube-system -f infrastructure/cilium/values.yaml
+#   helm upgrade cilium cilium/cilium --version 1.19.2 -n kube-system -f infrastructure/cilium/values.yaml --force-conflicts
+#   kubectl -n kube-system rollout restart deployment/cilium-operator
+#   kubectl -n kube-system rollout restart ds/cilium
 authentication:
   enabled: true
   mutual:
