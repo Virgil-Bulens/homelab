@@ -1,0 +1,33 @@
+---
+# cloudflared: outbound-only tunnel to Cloudflare edge.
+# Uses ports 443 (HTTPS) and 7844 (QUIC/HTTP3 fallback).
+# Receives inbound traffic from Cloudflare edge via the tunnel — that's
+# handled inside the tunnel connection, not as a separate ingress rule.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+spec:
+  endpointSelector:
+    matchLabels:
+      app: cloudflared
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "7844"
+              protocol: UDP
+    # Cloudflared proxies inbound requests to cluster backends via the Gateway.
+    # Allow egress to the Gateway LoadBalancer IP.
+    - toCIDR:
+        - 192.168.2.100/32
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "443"
+              protocol: TCP

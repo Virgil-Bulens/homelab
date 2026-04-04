@@ -1,0 +1,68 @@
+---
+# Allow all pods to reach CoreDNS for name resolution.
+# Without this, every pod loses DNS as soon as namespace policies apply default-deny.
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-dns
+spec:
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s-app: kube-dns
+            io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+---
+# Allow all pods to reach the Kubernetes API server.
+# Controllers (ArgoCD, cert-manager, sealed-secrets, tailscale, external-dns) all need this.
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+spec:
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - kube-apiserver
+---
+# Exempt kube-system from all policy enforcement.
+# Cilium agents, CoreDNS, cilium-envoy, metrics-server and local-path-provisioner
+# must communicate freely — restricting the policy engine itself is unsafe.
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-kube-system
+spec:
+  endpointSelector:
+    matchLabels:
+      io.kubernetes.pod.namespace: kube-system
+  ingress:
+    - fromEntities:
+        - all
+  egress:
+    - toEntities:
+        - all
+---
+# Exempt cilium-spire from policy enforcement.
+# SPIRE Server and Agents must communicate freely to issue SVIDs to all other workloads.
+# Restricting SPIRE would prevent Cilium from obtaining identities, deadlocking mutual auth.
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-cilium-spire
+spec:
+  endpointSelector:
+    matchLabels:
+      io.kubernetes.pod.namespace: cilium-spire
+  ingress:
+    - fromEntities:
+        - all
+  egress:
+    - toEntities:
+        - all
