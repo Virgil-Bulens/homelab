@@ -27,5 +27,7 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: virg-be-wildcard-tls
+          - group: ""
+            kind: Secret
+            name: virg-be-wildcard-tls
             namespace: networking
