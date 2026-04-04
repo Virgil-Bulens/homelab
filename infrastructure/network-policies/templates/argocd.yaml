@@ -1,4 +1,12 @@
 ---
+# ArgoCD network policies — restrict which pods can talk to which components.
+# authentication: mode: required is intentionally omitted for now.
+# Cilium Mutual Auth blocks connections until SPIRE issues an SVID to the pod,
+# but ArgoCD connects to Redis at startup before SPIRE can issue the SVID —
+# causing a boot-time deadlock. Network policy (allowlist per component) is the
+# primary control; mutual auth can be re-enabled once SVID pre-issuance is solved.
+
+---
 # argocd-redis: only accepts connections from argocd-server, repo-server, and application-controller.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
@@ -21,8 +29,6 @@ spec:
         - ports:
             - port: "6379"
               protocol: TCP
-      authentication:
-        mode: required
 ---
 # argocd-repo-server: called by argocd-server and application-controller.
 apiVersion: "cilium.io/v2"
@@ -44,10 +50,14 @@ spec:
         - ports:
             - port: "8081"
               protocol: TCP
-      authentication:
-        mode: required
   egress:
-    # Git repo access (GitHub)
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: argocd-redis
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
     - toEntities:
         - world
       toPorts:
@@ -77,10 +87,7 @@ spec:
               protocol: TCP
             - port: "5557"
               protocol: TCP
-      authentication:
-        mode: required
   egress:
-    # OIDC provider calls (e.g. GitHub OAuth)
     - toEntities:
         - world
       toPorts:
@@ -89,7 +96,6 @@ spec:
               protocol: TCP
 ---
 # argocd-server: accepts UI/API traffic from the Gateway (cilium-envoy).
-# Calls repo-server, dex-server, redis, application-controller, and the API server.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -100,7 +106,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: argocd-server
   ingress:
-    # Gateway envoy proxies HTTPRoute traffic to argocd-server
     - fromEndpoints:
         - matchLabels:
             k8s-app: cilium-envoy
@@ -119,8 +124,6 @@ spec:
         - ports:
             - port: "8081"
               protocol: TCP
-      authentication:
-        mode: required
     - toEndpoints:
         - matchLabels:
             app.kubernetes.io/name: argocd-redis
@@ -128,8 +131,6 @@ spec:
         - ports:
             - port: "6379"
               protocol: TCP
-      authentication:
-        mode: required
     - toEndpoints:
         - matchLabels:
             app.kubernetes.io/name: argocd-dex-server
@@ -139,8 +140,6 @@ spec:
               protocol: TCP
             - port: "5557"
               protocol: TCP
-      authentication:
-        mode: required
 ---
 # argocd-application-controller: reconciles Application CRDs.
 apiVersion: "cilium.io/v2"
@@ -152,6 +151,15 @@ spec:
   endpointSelector:
     matchLabels:
       app.kubernetes.io/name: argocd-application-controller
+  ingress:
+    # argocd-server calls application-controller on port 8082 for health checks
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: argocd-server
+      toPorts:
+        - ports:
+            - port: "8082"
+              protocol: TCP
   egress:
     - toEndpoints:
         - matchLabels:
@@ -160,8 +168,6 @@ spec:
         - ports:
             - port: "8081"
               protocol: TCP
-      authentication:
-        mode: required
     - toEndpoints:
         - matchLabels:
             app.kubernetes.io/name: argocd-redis
@@ -169,8 +175,6 @@ spec:
         - ports:
             - port: "6379"
               protocol: TCP
-      authentication:
-        mode: required
 ---
 # argocd-applicationset-controller: generates Application CRDs from ApplicationSets.
 apiVersion: "cilium.io/v2"
