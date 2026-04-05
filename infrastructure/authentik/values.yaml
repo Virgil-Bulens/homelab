@@ -1,0 +1,42 @@
+authentik:
+  # Disable bundled Bitnami PostgreSQL — using CNPG Cluster instead
+  postgresql:
+    enabled: false
+
+  authentik:
+    # Placeholder — overridden by AUTHENTIK_SECRET_KEY env var from SealedSecret
+    secret_key: "placeholder"
+    error_reporting:
+      enabled: false
+
+    postgresql:
+      host: "authentik-pg-rw"
+      name: "authentik"
+      user: "authentik"
+      # Placeholder — overridden by AUTHENTIK_POSTGRESQL__PASSWORD env var
+      password: "placeholder"
+
+  global:
+    env:
+      # secret_key from SealedSecret (cookie signing, unique user IDs — never rotate after first install)
+      - name: AUTHENTIK_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: authentik-secret
+            key: secret_key
+      # DB password from SealedSecret (same secret CNPG used to initialise the cluster)
+      - name: AUTHENTIK_POSTGRESQL__PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik-pg-credentials
+            key: password
+
+  server:
+    ingress:
+      enabled: false  # served via Gateway HTTPRoute
+
+  prometheus:
+    rules:
+      enabled: true
+      selector:
+        release: monitoring

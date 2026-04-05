@@ -1,0 +1,21 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: authentik-pg
+  namespace: authentik
+spec:
+  instances: 1
+
+  storage:
+    size: 5Gi
+    storageClass: longhorn
+
+  bootstrap:
+    initdb:
+      database: authentik
+      owner: authentik
+      # Use our pre-sealed credentials so the password is known and GitOps-managed.
+      # CNPG writes these into the auto-created authentik-pg-app secret as well.
+      secret:
+        name: authentik-pg-credentials
