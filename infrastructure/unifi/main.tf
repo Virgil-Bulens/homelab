@@ -16,8 +16,8 @@ resource "unifi_dns_record" "worker" {
 # Firewall — allow MacBook VLAN to reach the cluster Gateway on HTTP/HTTPS.
 # Without this, inter-VLAN traffic from 192.168.3.x to 192.168.2.100 is blocked.
 
-resource "unifi_firewall_group" "macbook_vlan" {
-  name    = "macbook-vlan"
+resource "unifi_firewall_group" "clients_vlan" {
+  name    = "clients-vlan"
   type    = "address-group"
   members = ["192.168.3.0/24"]
 }
@@ -28,13 +28,13 @@ resource "unifi_firewall_group" "k8s_gateway" {
   members = ["192.168.2.100"]
 }
 
-resource "unifi_firewall_rule" "macbook_to_gateway" {
-  name       = "allow-macbook-to-k8s-gateway"
+resource "unifi_firewall_rule" "clients_to_gateway" {
+  name       = "allow-clients-to-k8s-gateway"
   action     = "accept"
   ruleset    = "LAN_IN"
   rule_index = 2100
 
-  src_firewallgroup_ids = [unifi_firewall_group.macbook_vlan.id]
+  src_firewallgroup_ids = [unifi_firewall_group.clients_vlan.id]
   dst_firewallgroup_ids = [unifi_firewall_group.k8s_gateway.id]
 
   protocol = "tcp"
