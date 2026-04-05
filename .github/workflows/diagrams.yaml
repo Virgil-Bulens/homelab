@@ -6,10 +6,15 @@ on:
       - main
     paths:
       - infrastructure/proxmox/**.tf
+      - infrastructure/**/Chart.yaml
+      - infrastructure/**/templates/**.yaml
+      - infrastructure/**/values.yaml
+      - apps/**
+      - clusters/**
   workflow_dispatch:
 
 jobs:
-  generate:
+  terraform-diagram:
     name: Terraform architecture diagram
     runs-on: ubuntu-latest
     permissions:
@@ -29,3 +34,40 @@ jobs:
         with:
           commit_message: "docs: regenerate infrastructure diagram [skip ci]"
           file_pattern: "docs/infrastructure.md"
+
+  kubernetes-diagrams:
+    name: Kubernetes diagrams (KubeDiagrams)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Graphviz and KubeDiagrams
+        run: |
+          sudo apt-get install -y graphviz
+          pip install KubeDiagrams
+
+      - name: Generate diagrams
+        run: |
+          mkdir -p docs/diagrams
+
+          # render all Helm charts and collect raw manifests from clusters/ into one stream
+          {
+            for chart in infrastructure/*/; do
+              [ -f "${chart}Chart.yaml" ] || continue
+              helm dependency update "$chart" 2>/dev/null || true
+              helm template release "$chart" 2>/dev/null || true
+            done
+            cat clusters/home/infrastructure/*.yaml
+          } | kube-diagrams - -o docs/diagrams/cluster.png
+
+      - name: Commit diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: regenerate Kubernetes diagrams [skip ci]"
+          file_pattern: "docs/diagrams/*.png"
