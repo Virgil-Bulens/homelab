@@ -1,0 +1,66 @@
+kube-prometheus-stack:
+  # Grafana — credentials from SealedSecret; no persistence (dashboards managed as code via sidecar)
+  grafana:
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
+    persistence:
+      enabled: false
+    # Grafana is served via the Gateway HTTPRoute — disable the built-in ingress
+    ingress:
+      enabled: false
+    # Default dashboard sidecar — auto-loads ConfigMap-based dashboards
+    sidecar:
+      dashboards:
+        enabled: true
+
+  # Prometheus — persistent storage on Longhorn
+  prometheus:
+    prometheusSpec:
+      retention: 15d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: longhorn
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
+
+  # Alertmanager — no persistence (silences and dedup state are ephemeral; acceptable for homelab)
+  alertmanager:
+    alertmanagerSpec: {}
+
+loki:
+  # Single binary mode — appropriate for homelab scale
+  deploymentMode: SingleBinary
+  loki:
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    auth_enabled: false
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: true
+      storageClass: longhorn
+      size: 10Gi
+  # Disable microservice components (not used in single binary mode)
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+  # Disable Loki's bundled Grafana — we use the one from kube-prometheus-stack
+  grafana:
+    enabled: false
+
+promtail:
+  config:
+    clients:
+      # Release name is "monitoring", Loki service is "monitoring-loki"
+      - url: http://monitoring-loki:3100/loki/api/v1/push
