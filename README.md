@@ -73,9 +73,9 @@ This repo uses the ArgoCD **App of Apps** pattern. A root Application in `cluste
 3. Bootstrap ArgoCD — all subsequent installs are managed via ArgoCD
 4. Sealed Secrets controller + Tailscale operator
 5. Gateway API CRDs (bootstrap) + Cilium upgrade + cert-manager + Gateway + split-horizon external-dns (UniFi internal + Cloudflare external) + Cloudflare Tunnel
-6. Observability stack (kube-prometheus-stack + Loki)
-7. Authentik (SSO for all services)
-8. Longhorn (persistent storage)
+6. Longhorn (persistent storage — required before Observability and app deployments)
+7. Observability stack (kube-prometheus-stack + Loki)
+8. Authentik (SSO for all services)
 9. Self-hosted apps
 
 ## Bootstrap instructions
@@ -111,7 +111,16 @@ ansible-playbook playbooks/k3s.yml
 
 Nodes will register but show `NotReady` — that's expected until Cilium is installed.
 
-### 3. Fetch kubeconfig
+### 3. Install Longhorn prerequisites
+
+Longhorn requires `open-iscsi` (block storage) and `nfs-common` on every cluster node. Run this before ArgoCD deploys Longhorn:
+
+```bash
+cd ansible
+ansible-playbook playbooks/longhorn-prereqs.yml
+```
+
+### 4. Fetch kubeconfig
 
 k3s places its kubeconfig on the control plane at `/etc/rancher/k3s/k3s.yaml`. Copy it locally:
 
@@ -125,7 +134,7 @@ chmod 600 ~/.kube/config
 
 Verify: `kubectl get nodes` — all nodes should show `NotReady`.
 
-### 4. Install Cilium (CNI bootstrap)
+### 5. Install Cilium (CNI bootstrap)
 
 Cilium must be installed directly — it cannot be managed by ArgoCD because the cluster network must exist before ArgoCD can run.
 
@@ -162,7 +171,7 @@ Verify all nodes are `Ready`:
 kubectl get nodes
 ```
 
-### 5. Bootstrap ArgoCD
+### 6. Bootstrap ArgoCD
 
 Install ArgoCD into the cluster directly via Helm — this is the last manual install step:
 
@@ -189,7 +198,7 @@ kubectl apply -f bootstrap/root-application.yaml
 
 ArgoCD will discover `clusters/home/infrastructure/`, create all child Applications, and begin reconciling the cluster to match Git. From this point on, all changes go through Git.
 
-### 6. Enable Gateway API
+### 7. Enable Gateway API
 
 Gateway API CRDs and the Cilium upgrade are bootstrap steps — applied directly like Cilium and ArgoCD.
 

@@ -1,0 +1,12 @@
+longhorn:
+  defaultSettings:
+    # 2 replicas matches the worker count — can survive losing one worker
+    defaultReplicaCount: 2
+    # Refuse to schedule new volumes when less than 10% disk space remains
+    storageMinimalAvailablePercentage: 10
+
+  persistence:
+    # Longhorn is the default StorageClass for stateful workloads.
+    # local-path remains available by explicit storageClassName for system/ephemeral use.
+    defaultClass: true
+    defaultClassReplicaCount: 2
