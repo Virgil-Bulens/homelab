@@ -1,0 +1,11 @@
+cloudnative-pg:
+  # CRDs are managed by Helm — keep them in sync with the chart
+  crds:
+    create: true
+
+  # Expose operator metrics for Prometheus scraping
+  monitoring:
+    podMonitorEnabled: true
+    grafanaDashboard:
+      create: true
+      namespace: monitoring
