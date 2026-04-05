@@ -6,7 +6,8 @@ longhorn:
     storageMinimalAvailablePercentage: 10
 
   persistence:
-    # Longhorn is the default StorageClass for stateful workloads.
-    # local-path remains available by explicit storageClassName for system/ephemeral use.
-    defaultClass: true
+    # Not the default StorageClass — local-path remains default for system workloads.
+    # Stateful apps (Prometheus, Loki, Grafana, databases) must explicitly set
+    # storageClassName: longhorn in their PVCs / Helm values.
+    defaultClass: false
     defaultClassReplicaCount: 2
