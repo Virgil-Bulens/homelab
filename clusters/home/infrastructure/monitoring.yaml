@@ -16,6 +16,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
+  # The Gateway controller writes back status.parents on HTTPRoutes after admission.
+  # Ignore it to prevent ArgoCD from flagging routes as perpetually OutOfSync.
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      jsonPointers:
+        - /status
   syncPolicy:
     automated:
       prune: true
@@ -24,3 +31,4 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
       - SkipDryRunOnMissingResource=true
+      - RespectIgnoreDifferences=true
