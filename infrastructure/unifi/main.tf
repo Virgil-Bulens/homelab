@@ -28,18 +28,12 @@ resource "unifi_firewall_group" "k8s_gateway" {
   members = ["192.168.2.100"]
 }
 
-resource "unifi_firewall_rule" "clients_to_gateway" {
-  name       = "allow-clients-to-k8s-gateway"
-  action     = "accept"
-  ruleset    = "LAN_IN"
-  rule_index = 4000
-
-  src_firewall_group_ids = [unifi_firewall_group.clients_vlan.id]
-  dst_firewall_group_ids = [unifi_firewall_group.k8s_gateway.id]
-
-  protocol = "tcp"
-  dst_port = "80,443"
-}
+# unifi_firewall_rule "clients_to_gateway" is intentionally NOT managed here.
+# ubiquiti-community/unifi provider (v0.41.x) hardcodes rule_index validation to
+# 2000-2999 / 4000-4999, but this UniFi OS version assigns LAN_IN rules at 10000+.
+# The provider bug is tracked at: github.com/ubiquiti-community/terraform-provider-unifi/issues/142
+# Rule was created manually in the UI: "allow-clients-to-k8s-gateway", index 10012,
+# LAN_IN, accept TCP 80/443, src=clients-vlan group, dst=k8s-gateway group.
 
 # DHCP reservations
 
