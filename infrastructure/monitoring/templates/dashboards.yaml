@@ -1,6 +1,6 @@
 ---
 # Dashboard JSONs live in files/ (not templates/) so Helm doesn't process their
-# {{...}} Grafana template variables as Go template directives.
+# Grafana template variables (double-brace syntax) would be parsed as Go templates.
 apiVersion: v1
 kind: ConfigMap
 metadata:
