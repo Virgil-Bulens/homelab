@@ -56,15 +56,15 @@ jobs:
         run: |
           mkdir -p docs/diagrams
 
-          # render all Helm charts and collect raw manifests from clusters/ into one stream
-          {
-            for chart in infrastructure/*/; do
-              [ -f "${chart}Chart.yaml" ] || continue
-              helm dependency update "$chart" 2>/dev/null || true
-              helm template release "$chart" 2>/dev/null || true
-            done
-            cat clusters/home/infrastructure/*.yaml
-          } | kube-diagrams - -o docs/diagrams/cluster.png
+          # render all Helm charts and collect raw manifests from clusters/ into one file
+          tmpfile=$(mktemp /tmp/cluster-XXXXXX.yaml)
+          for chart in infrastructure/*/; do
+            [ -f "${chart}Chart.yaml" ] || continue
+            helm dependency update "$chart" 2>/dev/null || true
+            helm template release "$chart" 2>/dev/null >> "$tmpfile" || true
+          done
+          cat clusters/home/infrastructure/*.yaml >> "$tmpfile"
+          kube-diagrams "$tmpfile" -o docs/diagrams/cluster.png
 
       - name: Commit diagrams
         uses: stefanzweifel/git-auto-commit-action@v5
