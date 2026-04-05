@@ -39,6 +39,9 @@ flowchart TD
         cluster_scoped__letsencrypt_prod["letsencrypt-prod\n(ClusterIssuer)"]
         cluster_scoped__homelab_pool["LB pool\n192.168.2.100–192.168.2.200"]
     end
+    subgraph authentik__ns["authentik"]
+        authentik__authentik["authentik"]
+    end
     subgraph cnpg_system__ns["cnpg‑system"]
         cnpg_system__cloudnative_pg["cloudnative-pg"]
     end
