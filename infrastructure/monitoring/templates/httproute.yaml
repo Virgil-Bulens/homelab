@@ -6,13 +6,19 @@ metadata:
   namespace: monitoring
 spec:
   parentRefs:
-    - name: homelab
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: homelab
       namespace: networking
       sectionName: http
   hostnames:
     - grafana.virg.be
   rules:
-    - filters:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
@@ -27,12 +33,21 @@ metadata:
   namespace: monitoring
 spec:
   parentRefs:
-    - name: homelab
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: homelab
       namespace: networking
       sectionName: https
   hostnames:
     - grafana.virg.be
   rules:
-    - backendRefs:
-        - name: monitoring-grafana
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: monitoring-grafana
           port: 80
+          weight: 1
