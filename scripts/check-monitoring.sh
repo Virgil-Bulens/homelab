@@ -78,7 +78,11 @@ import sys, json, os
 RED='\033[0;31m'; YLW='\033[0;33m'; GRN='\033[0;32m'; RST='\033[0m'
 data = json.load(sys.stdin)
 alerts = data['data']['alerts']
-firing  = [a for a in alerts if a['state'] == 'firing'  and a['labels'].get('severity') != 'none']
+# Structural k3s/Cilium alerts that will never resolve — silenced in Alertmanager, filtered here too
+K3S_NOISE = {'KubeSchedulerDown', 'KubeControllerManagerDown', 'KubeProxyDown'}
+firing  = [a for a in alerts if a['state'] == 'firing'
+           and a['labels'].get('severity') != 'none'
+           and a['labels'].get('alertname') not in K3S_NOISE]
 pending = [a for a in alerts if a['state'] == 'pending']
 if not firing and not pending:
     print(f'  {GRN}OK{RST}   no alerts firing')
