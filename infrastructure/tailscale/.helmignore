@@ -1,0 +1,5 @@
+# Exclude Terraform working directory — provider binaries exceed Helm's file size limit
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
