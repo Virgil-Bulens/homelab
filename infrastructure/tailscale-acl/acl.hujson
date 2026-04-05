@@ -11,8 +11,19 @@
 	// Auto-approve subnet routes advertised by tagged devices.
 	"autoApprovers": {
 		"routes": {
-			"192.168.2.9/32": ["tag:k8s-operator"],
-			"192.168.1.1/32": ["tag:k8s-operator"],
+			"192.168.2.9/32":   ["tag:k8s-operator"],
+			"192.168.2.100/32": ["tag:k8s-operator"],
+			"192.168.1.1/32":   ["tag:k8s-operator"],
+		},
+	},
+
+	// Split DNS: route virg.be queries to the UniFi resolver when on Tailscale.
+	// This ensures argocd.virg.be resolves to 192.168.2.100 (internal) rather
+	// than the Cloudflare public record, so the subnet router route is used.
+	"dns": {
+		"nameservers": ["192.168.1.1"],
+		"restrictedNameservers": {
+			"virg.be": ["192.168.1.1"],
 		},
 	},
 
