@@ -32,7 +32,7 @@ resource "unifi_firewall_rule" "clients_to_gateway" {
   name       = "allow-clients-to-k8s-gateway"
   action     = "accept"
   ruleset    = "LAN_IN"
-  rule_index = 2100
+  rule_index = 2050
 
   src_firewall_group_ids = [unifi_firewall_group.clients_vlan.id]
   dst_firewall_group_ids = [unifi_firewall_group.k8s_gateway.id]
