@@ -64,6 +64,11 @@ loki:
     replicas: 0
   backend:
     replicas: 0
+  # Disable memcached caches — not needed at homelab scale, avoids scheduling pressure
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
   # Disable Loki's bundled Grafana — we use the one from kube-prometheus-stack
   grafana:
     enabled: false
