@@ -24,6 +24,10 @@ spec:
       kind: HTTPRoute
       managedFieldsManagers:
         - cilium-operator-generic
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+      managedFieldsManagers:
+        - prometheus-operator
   syncPolicy:
     automated:
       prune: true
