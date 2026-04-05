@@ -1,3 +1,6 @@
 ---
-argo-cd: {}
-# server.insecure will be enabled once Gateway API + cert-manager are in place
+argo-cd:
+  server:
+    # TLS terminated at the Gateway using the wildcard cert.
+    # argocd-server serves plain HTTP; Gateway proxies HTTPS → HTTP.
+    insecure: true
