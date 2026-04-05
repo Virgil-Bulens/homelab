@@ -14,6 +14,9 @@ kube-prometheus-stack:
     sidecar:
       dashboards:
         enabled: true
+    grafana.ini:
+      dashboards:
+        default_home_dashboard_path: /tmp/dashboards/k8s-resources-cluster.json
 
   # Prometheus — persistent storage on Longhorn
   prometheus:
