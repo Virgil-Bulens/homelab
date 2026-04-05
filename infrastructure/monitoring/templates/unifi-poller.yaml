@@ -17,12 +17,13 @@ spec:
       containers:
         - name: unifi-poller
           image: ghcr.io/unpoller/unpoller:v2.39.0
+          args: ["-c", "/config/up.yaml"]
           ports:
             - name: metrics
               containerPort: 9130
           volumeMounts:
             - name: config
-              mountPath: /etc/unpoller
+              mountPath: /config
           resources:
             requests:
               cpu: 10m
