@@ -16,15 +16,20 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
+  # kube-prometheus-stack CRDs exceed the 262144-byte annotation limit — SSA required.
+  # SSA causes Cilium to appear as a co-owner of HTTPRoute status fields, so ignore
+  # those by manager name rather than JSON pointer (the SSA-aware mechanism).
   ignoreDifferences:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      jsonPointers:
-        - /status
+      managedFieldsManagers:
+        - cilium-operator-generic
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
       - SkipDryRunOnMissingResource=true
+      - RespectIgnoreDifferences=true
