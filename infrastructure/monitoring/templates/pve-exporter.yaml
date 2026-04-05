@@ -70,5 +70,6 @@ spec:
         target: ["192.168.2.9"]
         module: ["default"]
       relabelings:
-        - sourceLabels: [__param_target]
+        - action: replace
+          sourceLabels: [__param_target]
           targetLabel: instance
