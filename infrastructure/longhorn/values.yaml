@@ -1,4 +1,9 @@
 longhorn:
+  # Pre-upgrade job requires longhorn-service-account to already exist — fails on fresh install.
+  # Only meaningful when upgrading from a prior Longhorn version; skip on first deploy.
+  preUpgradeChecker:
+    jobEnabled: false
+
   defaultSettings:
     # 2 replicas matches the worker count — can survive losing one worker
     defaultReplicaCount: 2
