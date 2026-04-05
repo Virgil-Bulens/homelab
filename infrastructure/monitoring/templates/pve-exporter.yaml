@@ -1,0 +1,113 @@
+---
+# pve.yml config — credentials injected at runtime from SealedSecret env vars.
+# prometheus-pve-exporter reads PVE_USER and PVE_TOKEN_VALUE from the environment
+# and substitutes them into the config file via envsubst on startup (using the
+# shell-form entrypoint wrapper below).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pve-exporter-config
+  namespace: monitoring
+data:
+  pve.yml: |
+    default:
+      user: "${PVE_USER}"
+      token_name: "${PVE_TOKEN_NAME}"
+      token_value: "${PVE_TOKEN_VALUE}"
+      verify_ssl: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pve-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pve-exporter
+  template:
+    metadata:
+      labels:
+        app: pve-exporter
+    spec:
+      containers:
+        - name: pve-exporter
+          image: prompve/prometheus-pve-exporter:3.8.2
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              envsubst < /etc/pve/pve.yml.tpl > /tmp/pve.yml
+              exec pve_exporter --config.file /tmp/pve.yml
+          ports:
+            - name: metrics
+              containerPort: 9221
+          env:
+            - name: PVE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pve-exporter-secret
+                  key: user
+            - name: PVE_TOKEN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: pve-exporter-secret
+                  key: token_name
+            - name: PVE_TOKEN_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: pve-exporter-secret
+                  key: token_value
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pve/pve.yml.tpl
+              subPath: pve.yml
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config
+          configMap:
+            name: pve-exporter-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pve-exporter
+  namespace: monitoring
+  labels:
+    app: pve-exporter
+spec:
+  selector:
+    app: pve-exporter
+  ports:
+    - name: metrics
+      port: 9221
+      targetPort: metrics
+---
+# Prometheus scrapes pve-exporter with a ?target= query param pointing at the
+# Proxmox host — the exporter acts as a proxy, one scrape job per target.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pve-exporter
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: pve-exporter
+  endpoints:
+    - port: metrics
+      path: /pve
+      # Scrape Proxmox node at 192.168.2.9 — passed as query param to the exporter
+      params:
+        target: ["192.168.2.9"]
+        module: ["default"]
+      relabelings:
+        - sourceLabels: [__param_target]
+          targetLabel: instance

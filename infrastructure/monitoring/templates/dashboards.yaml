@@ -1,0 +1,56 @@
+---
+# Grafana dashboard ConfigMaps — loaded automatically by the grafana-sc-dashboard sidecar.
+# The dashboard JSON must be populated before committing. Fetch it with:
+#
+#   curl -s "https://grafana.com/api/dashboards/10347/revisions/latest/download" \
+#     | jq . > /tmp/pve.json
+#   curl -s "https://grafana.com/api/dashboards/11315/revisions/latest/download" \
+#     | jq . > /tmp/unifi-clients.json
+#   curl -s "https://grafana.com/api/dashboards/11312/revisions/latest/download" \
+#     | jq . > /tmp/unifi-sites.json
+#
+# Then replace each TODO below with the contents of the corresponding file.
+# This step requires internet access (run from a machine, not the devcontainer).
+#
+# Dashboard sources:
+#   10347 — Proxmox VE (prometheus-pve-exporter)
+#   11315 — UniFi Poller: Client Insights
+#   11312 — UniFi Poller: USG/Site Insights
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-pve
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Infrastructure"
+data:
+  pve.json: |
+    TODO: paste output of: curl -s "https://grafana.com/api/dashboards/10347/revisions/latest/download" | jq .
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-unifi-clients
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Infrastructure"
+data:
+  unifi-clients.json: |
+    TODO: paste output of: curl -s "https://grafana.com/api/dashboards/11315/revisions/latest/download" | jq .
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-unifi-sites
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Infrastructure"
+data:
+  unifi-sites.json: |
+    TODO: paste output of: curl -s "https://grafana.com/api/dashboards/11312/revisions/latest/download" | jq .

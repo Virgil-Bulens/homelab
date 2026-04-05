@@ -1,0 +1,107 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifi-poller-config
+  namespace: monitoring
+data:
+  up.yaml: |
+    poller:
+      debug: false
+      quiet: false
+    prometheus:
+      disable: false
+      http_listen: "0.0.0.0:9130"
+      report_errors: false
+    influxdb:
+      disable: true
+    unifi:
+      dynamic: false
+      controllers:
+        - url: https://192.168.1.1
+          verify_ssl: false
+          # Credentials injected via env vars UP_UNIFI_CONTROLLER_0_USER / _PASS
+          sites:
+            - all
+          save_ids: true
+          save_sites: true
+          save_dpi: false
+          hash_pii: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-poller
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi-poller
+  template:
+    metadata:
+      labels:
+        app: unifi-poller
+    spec:
+      containers:
+        - name: unifi-poller
+          image: ghcr.io/unpoller/unpoller:v2.39.0
+          ports:
+            - name: metrics
+              containerPort: 9130
+          env:
+            # unpoller reads credentials from env vars; these override the config file
+            - name: UP_UNIFI_CONTROLLER_0_USER
+              valueFrom:
+                secretKeyRef:
+                  name: unifi-poller-secret
+                  key: user
+            - name: UP_UNIFI_CONTROLLER_0_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: unifi-poller-secret
+                  key: password
+          volumeMounts:
+            - name: config
+              mountPath: /etc/unpoller/up.yaml
+              subPath: up.yaml
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config
+          configMap:
+            name: unifi-poller-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-poller
+  namespace: monitoring
+  labels:
+    app: unifi-poller
+spec:
+  selector:
+    app: unifi-poller
+  ports:
+    - name: metrics
+      port: 9130
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: unifi-poller
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: unifi-poller
+  endpoints:
+    - port: metrics
+      interval: 30s
