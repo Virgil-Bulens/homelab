@@ -1,0 +1,16 @@
+---
+# Announce LoadBalancer IPs via ARP on the servers VLAN interface.
+# Without this, 192.168.2.100 has no ARP entry and is unreachable from other subnets.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: homelab
+spec:
+  loadBalancerIPs: true
+  # Announce on the primary NIC; eth0 is the interface on Proxmox VMs.
+  interfaces:
+    - eth0
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: DoesNotExist
