@@ -10,8 +10,9 @@ external-dns:
   # Identifies records owned by this instance; must differ from internal instance
   txtOwnerId: homelab-external
 
-  # Only create/update — never delete records
-  policy: upsert-only
+  # Sync: create, update, and delete records to match the desired state.
+  # Ensures records for removed/unannotated HTTPRoutes are cleaned up.
+  policy: sync
 
   provider:
     name: cloudflare
