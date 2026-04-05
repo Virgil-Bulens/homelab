@@ -17,16 +17,6 @@
 		},
 	},
 
-	// Split DNS: route virg.be queries to the UniFi resolver when on Tailscale.
-	// This ensures argocd.virg.be resolves to 192.168.2.100 (internal) rather
-	// than the Cloudflare public record, so the subnet router route is used.
-	"dnsConfig": {
-		"nameservers": ["192.168.1.1"],
-		"restrictedNameservers": {
-			"virg.be": ["192.168.1.1"],
-		},
-	},
-
 	// Access control grants.
 	"grants": [
 		// Allow all connections within the tailnet.
