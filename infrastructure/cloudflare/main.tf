@@ -19,11 +19,14 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "homelab" {
 
   config {
     # TEMPORARY — public for Cloudflare tunnel test. Remove after test.
-    # Port 80 redirects to HTTPS (loop). Use port 443 — Gateway terminates TLS
-    # with the valid *.virg.be cert so cloudflared can verify it.
+    # Port 80 redirects to HTTPS (loop). Use port 443 with originServerName so
+    # cloudflared sends SNI argocd.virg.be — matching the *.virg.be cert on the Gateway.
     ingress_rule {
       hostname = "argocd.virg.be"
       service  = "https://cilium-gateway-homelab.networking.svc.cluster.local:443"
+      origin_request {
+        origin_server_name = "argocd.virg.be"
+      }
     }
 
     # Required catch-all — cloudflared rejects configs without one.
