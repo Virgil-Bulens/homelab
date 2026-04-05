@@ -1,5 +1,0 @@
----
-apiVersion: v2
-name: network-policies
-version: 1.0.0
-description: CiliumNetworkPolicies and CiliumClusterwideNetworkPolicies for the homelab cluster.

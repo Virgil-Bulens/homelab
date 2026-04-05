@@ -38,6 +38,10 @@ ipam:
 k8sServiceHost: 192.168.2.10
 k8sServicePort: 6443
 kubeProxyReplacement: true
+# Required in native routing mode — without it the BPF veth hook classifies
+# host-originated traffic (kubelet probes) as identity=world, causing probe drops.
+hostFirewall:
+  enabled: true
 operator:
   replicas: 1
 # Native routing: all nodes are on the same L2 subnet (192.168.2.x).
