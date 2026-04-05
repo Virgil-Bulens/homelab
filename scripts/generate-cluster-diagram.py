@@ -22,6 +22,12 @@ except ImportError:
     print("Missing dependency: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
+try:
+    import hcl2
+except ImportError:
+    print("Missing dependency: pip install python-hcl2", file=sys.stderr)
+    sys.exit(1)
+
 
 # Kinds to include as diagram nodes
 WORKLOAD_KINDS = {"Deployment", "DaemonSet", "StatefulSet"}
@@ -62,12 +68,39 @@ def load_docs(path):
     return docs
 
 
+def load_public_hostnames(infra_dir):
+    """
+    Parse infrastructure/cloudflare/*.tf for Cloudflare Tunnel ingress_rule blocks
+    that have an explicit hostname — these are the URLs actually exposed to the internet.
+    Rules without a hostname are catch-alls and are skipped.
+    """
+    hostnames = set()
+    cf_dir = Path(infra_dir) / "cloudflare"
+    if not cf_dir.exists():
+        return hostnames
+    for tf_file in cf_dir.glob("*.tf"):
+        try:
+            with open(tf_file) as f:
+                config = hcl2.load(f)
+        except Exception:
+            continue
+        for block in config.get("resource", []):
+            for instances in block.get("cloudflare_zero_trust_tunnel_cloudflared_config", {}).values():
+                for cfg in instances.get("config", []):
+                    for rule in cfg.get("ingress_rule", []):
+                        hostname = rule.get("hostname")
+                        if hostname:
+                            hostnames.add(hostname)
+    return hostnames
+
+
 def collect(infra_dir):
     """
     Returns:
-        nodes   — list of {kind, name, namespace, label}
-        routes  — list of {hostname, backend_name, backend_namespace}
-                  derived from HTTPRoutes (https section only — skip redirect routes)
+        nodes           — list of {kind, name, namespace, label}
+        routes          — list of {hostname, backend_name, backend_namespace}
+                          derived from HTTPRoutes (https section only)
+        public_hostnames — set of hostnames actually exposed via Cloudflare Tunnel
     """
     nodes = []
     routes = []
@@ -146,10 +179,11 @@ def collect(infra_dir):
                                 "backend_namespace": namespace,
                             })
 
-    return nodes, routes
+    public_hostnames = load_public_hostnames(infra_dir)
+    return nodes, routes, public_hostnames
 
 
-def generate(nodes, routes):
+def generate(nodes, routes, public_hostnames):
     lines = ["```mermaid", "flowchart TD"]
 
     # Group by namespace
@@ -163,13 +197,20 @@ def generate(nodes, routes):
         nid = node_id(n["namespace"], n["name"])
         id_map[(n["name"], n["namespace"])] = nid
 
-    # External block
-    lines += [
-        '    subgraph external["External"]',
-        '        internet["Internet / LAN"]',
-        '        ts_net["Tailscale Network"]',
-        "    end",
-    ]
+    gw_id = id_map.get(("homelab", "networking"))
+    cfd_id = id_map.get(("cloudflared", "cloudflared"))
+    connector_id = id_map.get(("homelab-subnet-router", "tailscale"))
+
+    # Public routes: HTTPRoutes whose hostname is in the Cloudflare Tunnel ingress config
+    public_routes = [r for r in routes if r["hostname"] in public_hostnames]
+
+    # External block — only include Internet node if something is actually public
+    lines.append('    subgraph external["External"]')
+    if public_routes:
+        lines.append('        internet["Internet"]')
+    lines.append('        lan["LAN (192.168.2.x)"]')
+    lines.append('        ts_net["Tailscale Network"]')
+    lines.append("    end")
 
     # Namespace subgraphs — cluster-scoped last
     def ns_order(ns):
@@ -186,25 +227,27 @@ def generate(nodes, routes):
             lines.append(f'        {nid}["{label}"]')
         lines.append("    end")
 
-    # Edges
-    gw_id = id_map.get(("homelab", "networking"))
-    cfd_id = id_map.get(("cloudflared", "cloudflared"))
-    connector_id = id_map.get(("homelab-subnet-router", "tailscale"))
-
-    if cfd_id:
-        lines.append(f"    internet --> {cfd_id}")
-    if cfd_id and gw_id:
-        lines.append(f"    {cfd_id} --> {gw_id}")
+    # LAN → Gateway (L2 announcement — always present)
     if gw_id:
-        lines.append(f"    internet --> {gw_id}")
+        lines.append(f"    lan --> {gw_id}")
+
+    # Cloudflare Tunnel: only draw if there are actual public ingress rules
+    if public_routes and cfd_id and gw_id:
+        lines.append(f"    internet --> {cfd_id}")
+        lines.append(f"    {cfd_id} --> {gw_id}")
+
+    # Tailscale subnet router
     if connector_id:
         lines.append(f"    ts_net --> {connector_id}")
 
-    # HTTPRoute backend edges: Gateway → backend Deployment
+    # Gateway → backend edges, labelled with hostname.
+    # Public routes get an extra "(public)" marker on the edge.
+    public_hostnames_set = {r["hostname"] for r in public_routes}
     for route in routes:
         backend_id = id_map.get((route["backend_name"], route["backend_namespace"]))
         if backend_id and gw_id:
-            lines.append(f'    {gw_id} -->|"{route["hostname"]}"| {backend_id}')
+            suffix = " ⬡" if route["hostname"] in public_hostnames_set else ""
+            lines.append(f'    {gw_id} -->|"{route["hostname"]}{suffix}"| {backend_id}')
 
     lines.append("```")
     return "\n".join(lines)
@@ -218,8 +261,8 @@ if __name__ == "__main__":
     infra_dir = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
 
-    nodes, routes = collect(infra_dir)
-    diagram = generate(nodes, routes)
+    nodes, routes, public_hostnames = collect(infra_dir)
+    diagram = generate(nodes, routes, public_hostnames)
 
     if output_file:
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
