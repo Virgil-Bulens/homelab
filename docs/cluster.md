@@ -1,7 +1,7 @@
 ```mermaid
 flowchart TD
     subgraph external["External"]
-        internet["Internet / LAN"]
+        lan["LAN (192.168.2.x)"]
         ts_net["Tailscale Network"]
     end
     subgraph networking__ns["networking"]
@@ -32,9 +32,7 @@ flowchart TD
         cluster_scoped__letsencrypt_prod["letsencrypt-prod\n(ClusterIssuer)"]
         cluster_scoped__homelab_pool["LB pool\n192.168.2.100–192.168.2.200"]
     end
-    internet --> cloudflared__cloudflared
-    cloudflared__cloudflared --> networking__homelab
-    internet --> networking__homelab
+    lan --> networking__homelab
     ts_net --> tailscale__homelab_subnet_router
     networking__homelab -->|"argocd.virg.be"| argocd__argocd_server
 ```
