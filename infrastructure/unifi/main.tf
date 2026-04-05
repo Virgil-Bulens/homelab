@@ -34,8 +34,8 @@ resource "unifi_firewall_rule" "clients_to_gateway" {
   ruleset    = "LAN_IN"
   rule_index = 2100
 
-  src_firewallgroup_ids = [unifi_firewall_group.clients_vlan.id]
-  dst_firewallgroup_ids = [unifi_firewall_group.k8s_gateway.id]
+  src_firewall_group_ids = [unifi_firewall_group.clients_vlan.id]
+  dst_firewall_group_ids = [unifi_firewall_group.k8s_gateway.id]
 
   protocol = "tcp"
   dst_port = "80,443"
