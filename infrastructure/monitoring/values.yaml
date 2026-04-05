@@ -35,6 +35,42 @@ kube-prometheus-stack:
   # Alertmanager — no persistence (silences and dedup state are ephemeral; acceptable for homelab)
   alertmanager:
     alertmanagerSpec: {}
+    config:
+      # k3s embeds the scheduler and controller-manager in its own binary and
+      # uses Cilium in kube-proxy replacement mode, so these three components
+      # never expose the metrics endpoints kube-prometheus-stack expects.
+      # Route them to null so they don't drown out real alerts.
+      route:
+        receiver: "null"
+        group_by: ["namespace"]
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+        routes:
+          - receiver: "null"
+            matchers:
+              - alertname =~ "InfoInhibitor|Watchdog"
+          - receiver: "null"
+            matchers:
+              - alertname =~ "KubeSchedulerDown|KubeControllerManagerDown|KubeProxyDown"
+      receivers:
+        - name: "null"
+      inhibit_rules:
+        - source_matchers:
+            - severity = critical
+          target_matchers:
+            - severity =~ warning|info
+          equal: [namespace, alertname]
+        - source_matchers:
+            - severity = warning
+          target_matchers:
+            - severity = info
+          equal: [namespace, alertname]
+        - source_matchers:
+            - alertname = InfoInhibitor
+          target_matchers:
+            - severity = info
+          equal: [namespace]
 
 loki:
   # Single binary mode — appropriate for homelab scale
