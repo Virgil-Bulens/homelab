@@ -28,3 +28,6 @@ external-dns:
     - --cloudflare-proxied
     # Point all created records at the tunnel CNAME
     - --default-targets=80cf466e-1ffb-48c3-9953-718e7e9cf718.cfargotunnel.com
+    # Opt-in: only create records for HTTPRoutes with this annotation.
+    # To make an app public, add: external-dns.alpha.kubernetes.io/public: "true"
+    - --annotation-filter=external-dns.alpha.kubernetes.io/public=true
