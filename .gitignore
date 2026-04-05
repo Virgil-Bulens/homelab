@@ -16,5 +16,8 @@
 .DS_Store
 Thumbs.db
 
+# Helm — downloaded chart tarballs (like node_modules; Chart.lock is committed)
+charts/
+
 # Editors
 .vscode/settings.json
