@@ -35,8 +35,8 @@ jobs:
           commit_message: "docs: regenerate infrastructure diagram [skip ci]"
           file_pattern: "docs/infrastructure.md"
 
-  kubernetes-diagrams:
-    name: Kubernetes diagrams (KubeDiagrams)
+  cluster-diagram:
+    name: Cluster architecture diagram
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -44,30 +44,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
+      - name: Install pyyaml
+        run: pip install pyyaml
 
-      - name: Install Graphviz and KubeDiagrams
-        run: |
-          sudo apt-get install -y graphviz
-          pip install KubeDiagrams
+      - name: Generate Mermaid diagram
+        run: python scripts/generate-cluster-diagram.py infrastructure/ docs/cluster.md
 
-      - name: Generate diagrams
-        run: |
-          mkdir -p docs/diagrams
-
-          # render all Helm charts and collect raw manifests from clusters/ into one file
-          tmpfile=$(mktemp /tmp/cluster-XXXXXX.yaml)
-          for chart in infrastructure/*/; do
-            [ -f "${chart}Chart.yaml" ] || continue
-            helm dependency update "$chart" 2>/dev/null || true
-            helm template release "$chart" 2>/dev/null >> "$tmpfile" || true
-          done
-          cat clusters/home/infrastructure/*.yaml >> "$tmpfile"
-          kube-diagrams "$tmpfile" -o docs/diagrams/cluster.png
-
-      - name: Commit diagrams
+      - name: Commit updated diagram
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs: regenerate Kubernetes diagrams [skip ci]"
-          file_pattern: "docs/diagrams/*.png"
+          commit_message: "docs: regenerate cluster diagram [skip ci]"
+          file_pattern: "docs/cluster.md"

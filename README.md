@@ -13,7 +13,7 @@ GitOps homelab running on Proxmox (Intel NUC i7, 64 GB RAM). Built as a learning
 
 See [infrastructure diagram](docs/infrastructure.md) — auto-generated from `infrastructure/proxmox/*.tf` on every push.
 
-A [cluster diagram](docs/diagrams/cluster.png) is auto-generated from all Helm charts and ArgoCD Applications on every push.
+See [cluster diagram](docs/cluster.md) — auto-generated from `infrastructure/` manifests and Helm charts on every push.
 
 ## Tech stack
 
