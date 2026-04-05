@@ -1,6 +1,7 @@
 ---
 argo-cd:
-  server:
-    # TLS terminated at the Gateway using the wildcard cert.
-    # argocd-server serves plain HTTP; Gateway proxies HTTPS → HTTP.
-    insecure: true
+  configs:
+    params:
+      # TLS terminated at the Gateway using the wildcard cert.
+      # argocd-server serves plain HTTP; Gateway proxies HTTPS → HTTP.
+      server.insecure: "true"
