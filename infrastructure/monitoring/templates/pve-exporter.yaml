@@ -23,8 +23,7 @@ spec:
               containerPort: 9221
           volumeMounts:
             - name: config
-              mountPath: /etc/pve/pve.yml
-              subPath: pve.yml
+              mountPath: /etc/pve
           resources:
             requests:
               cpu: 10m

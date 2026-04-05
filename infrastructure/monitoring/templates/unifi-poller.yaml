@@ -22,8 +22,7 @@ spec:
               containerPort: 9130
           volumeMounts:
             - name: config
-              mountPath: /etc/unpoller/up.conf
-              subPath: up.conf
+              mountPath: /etc/unpoller
           resources:
             requests:
               cpu: 10m
