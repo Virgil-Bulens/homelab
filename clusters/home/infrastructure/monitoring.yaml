@@ -16,13 +16,14 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
-  # The Gateway controller writes back status.parents on HTTPRoutes after admission.
-  # Ignore it to prevent ArgoCD from flagging routes as perpetually OutOfSync.
+  # Cilium (Gateway controller) writes back status.parents on HTTPRoutes after admission.
+  # With ServerSideApply, ignore by managedFieldsManagers rather than jsonPointers —
+  # that's the SSA-aware mechanism ArgoCD uses to skip fields owned by another manager.
   ignoreDifferences:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      jsonPointers:
-        - /status
+      managedFieldsManagers:
+        - cilium-operator-generic
   syncPolicy:
     automated:
       prune: true

@@ -16,8 +16,8 @@ spec:
   ignoreDifferences:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      jsonPointers:
-        - /status
+      managedFieldsManagers:
+        - cilium-operator-generic
   syncPolicy:
     automated:
       prune: true
