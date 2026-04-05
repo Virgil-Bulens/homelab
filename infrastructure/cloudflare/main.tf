@@ -18,17 +18,26 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "homelab" {
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.homelab.id
 
   config {
-    # No public apps yet. Add rules here as apps are deployed, e.g.:
-    # ingress_rule {
-    #   hostname = "blog.virg.be"
-    #   service  = "http://homelab.networking.svc.cluster.local:80"
-    # }
+    # TEMPORARY — public for Cloudflare tunnel test. Remove after test.
+    ingress_rule {
+      hostname = "argocd.virg.be"
+      service  = "http://cilium-gateway-homelab.networking.svc.cluster.local:80"
+    }
 
     # Required catch-all — cloudflared rejects configs without one.
     ingress_rule {
       service = "http_status:404"
     }
   }
+}
+
+# TEMPORARY — argocd public for tunnel test. Remove after test.
+resource "cloudflare_record" "argocd" {
+  zone_id = var.cloudflare_zone_id
+  name    = "argocd"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.homelab.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
 }
 
 # Apex CNAME — virg.be itself points to the tunnel for the future landing page.
