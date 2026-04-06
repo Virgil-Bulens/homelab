@@ -25,6 +25,10 @@ velero:
     useSecret: true
     existingSecret: velero-r2-credentials
 
+  # EnableCSI is required for the csi-pvc-backupper plugin to take VolumeSnapshots.
+  # Without it, Velero skips CSI snapshot actions and backs up only metadata.
+  features: EnableCSI
+
   configuration:
     backupStorageLocation:
       - name: default
