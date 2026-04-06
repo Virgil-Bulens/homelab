@@ -13,28 +13,21 @@
         state: present
         update_cache: false
 
-    - name: Detect root device and partition number
+    - name: Detect root disk
       ansible.builtin.shell:
-        # findmnt gives us e.g. /dev/sda1; we split off the trailing digit(s) for growpart
-        cmd: |
-          device=$(findmnt -n -o SOURCE /)
-          echo "device=$device"
-          # Strip trailing digit(s) to get the disk (e.g. /dev/sda)
-          disk=$(echo "$device" | sed 's/[0-9]*$//')
-          # Partition number is the trailing digit(s)
-          part=$(echo "$device" | grep -oE '[0-9]+$')
-          echo "disk=$disk part=$part"
-      register: root_info
+        cmd: findmnt -n -o SOURCE / | sed 's/[0-9]*$//'
+      register: root_disk_raw
       changed_when: false
 
-    - name: Parse disk and partition
-      ansible.builtin.set_fact:
-        root_disk: "{{ root_info.stdout | regex_search('disk=([^\\n]+)', '\\1') | first }}"
-        root_part: "{{ root_info.stdout | regex_search('part=([^\\n]+)', '\\1') | first }}"
+    - name: Detect root partition number
+      ansible.builtin.shell:
+        cmd: findmnt -n -o SOURCE / | grep -oE '[0-9]+$'
+      register: root_part_raw
+      changed_when: false
 
     - name: Extend partition to fill disk
       ansible.builtin.command:
-        cmd: growpart {{ root_disk }} {{ root_part }}
+        cmd: growpart {{ root_disk_raw.stdout | trim }} {{ root_part_raw.stdout | trim }}
       register: growpart_result
       # growpart exits 1 if already at max size — that is not a failure
       failed_when: growpart_result.rc not in [0, 1]
@@ -42,6 +35,6 @@
 
     - name: Resize filesystem to fill partition
       ansible.builtin.command:
-        cmd: resize2fs {{ root_disk }}{{ root_part }}
+        cmd: resize2fs {{ root_disk_raw.stdout | trim }}{{ root_part_raw.stdout | trim }}
       register: resize_result
       changed_when: "'nothing to do' not in resize_result.stdout"
