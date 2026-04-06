@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: authentik-blueprints
+  name: authentik-blueprints-example
   namespace: authentik
 data:
   oauth2-apps.yaml: |

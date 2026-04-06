@@ -4,10 +4,10 @@ authentik:
   postgresql:
     enabled: false
 
-  # Load blueprints from ConfigMap
+  # Load blueprints from ConfigMaps
   blueprints:
     configMaps:
-      - authentik-blueprints
+      - authentik-blueprints-example
 
   authentik:
     # Placeholder — overridden by AUTHENTIK_SECRET_KEY env var from SealedSecret
@@ -36,23 +36,10 @@ authentik:
           secretKeyRef:
             name: authentik-pg-credentials
             key: password
-      # Blueprint discovery directory (mounted ConfigMap)
-      - name: AUTHENTIK_BLUEPRINTS_DIR
-        value: /blueprints
 
   server:
     ingress:
       enabled: false  # served via Gateway HTTPRoute
-
-    volumeMounts:
-      - name: blueprints
-        mountPath: /blueprints
-        readOnly: true
-
-    volumes:
-      - name: blueprints
-        configMap:
-          name: authentik-blueprints
 
   prometheus:
     rules:
