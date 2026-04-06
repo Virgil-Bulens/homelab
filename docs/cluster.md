@@ -45,6 +45,9 @@ flowchart TD
     subgraph cnpg_system__ns["cnpg‑system"]
         cnpg_system__cloudnative_pg["cloudnative-pg"]
     end
+    subgraph velero__ns["velero"]
+        velero__velero["velero"]
+    end
     lan --> networking__homelab
     ts_net --> tailscale__homelab_subnet_router
     networking__homelab -->|"argocd.virg.be"| argocd__argocd_server
