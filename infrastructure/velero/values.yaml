@@ -1,3 +1,4 @@
+---
 velero:
   # CSI Data Movement via Kopia — no file system backup, no native cloud snapshots.
   uploaderType: kopia
@@ -45,6 +46,5 @@ velero:
     serviceMonitor:
       enabled: true
       namespace: velero
-
   # Grafana dashboard ID 16829 — provisioned via ConfigMap sidecar (same pattern as monitoring stack)
   # Add dashboard JSON to templates/dashboards.yaml after confirming Grafana sidecar label selector.

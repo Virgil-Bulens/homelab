@@ -1,3 +1,4 @@
+---
 cloudnative-pg:
   # CRDs are managed by Helm — keep them in sync with the chart
   crds:

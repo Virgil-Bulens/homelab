@@ -1,3 +1,4 @@
+---
 kube-prometheus-stack:
   # Grafana — credentials from SealedSecret; no persistence (dashboards managed as code via sidecar)
   grafana:

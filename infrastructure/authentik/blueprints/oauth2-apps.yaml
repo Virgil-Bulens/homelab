@@ -18,7 +18,7 @@ entries:
       name: argocd
       slug: argocd
       provider: !Find [authentik_providers_oauth2.oauth2provider, [name, argocd]]
-  
+
   # Grafana OAuth2 Application
   - model: authentik_providers_oauth2.oauth2provider
     identifiers:

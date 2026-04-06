@@ -1,3 +1,4 @@
+---
 authentik:
   # Disable bundled Bitnami PostgreSQL — using CNPG Cluster instead
   postgresql:
