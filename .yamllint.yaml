@@ -6,6 +6,7 @@ rules:
     # SealedSecret encrypted values exceed line limits — ignore them
     ignore: |
       infrastructure/**/*-secret.yaml
+      infrastructure/**/*-sealed.yaml
       infrastructure/**/templates/*token*.yaml
       infrastructure/**/templates/*secret*.yaml
   truthy:
