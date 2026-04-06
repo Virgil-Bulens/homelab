@@ -1,0 +1,19 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: nightly-full
+  namespace: velero
+spec:
+  # 02:00 UTC nightly — low-traffic window
+  schedule: "0 2 * * *"
+  template:
+    storageLocation: default
+    ttl: 336h  # 14-day rolling retention
+    defaultVolumesToFsBackup: false
+    snapshotMoveData: true
+    includedNamespaces:
+      - "*"
+    excludedNamespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease

@@ -1,0 +1,35 @@
+velero:
+  # CSI Data Movement via Kopia — no file system backup, no native cloud snapshots.
+  uploaderType: kopia
+  snapshotsEnabled: false
+  defaultVolumesToFsBackup: false
+
+  # Node agent required for Longhorn block volume access (mounts snapshot clone PVCs).
+  deployNodeAgent: true
+  nodeAgent:
+    privileged: true
+
+  credentials:
+    useSecret: true
+    existingSecret: velero-r2-credentials
+
+  configuration:
+    backupStorageLocation:
+      - name: default
+        provider: aws
+        bucket: homelab-velero-backups
+        default: true
+        config:
+          region: auto
+          # Substitute CLOUDFLARE_ACCOUNT_ID after terraform apply (see infrastructure/cloudflare-r2/outputs.tf)
+          s3Url: https://c3aead5e648abe8b77607055ef68508d.r2.cloudflarestorage.com
+          s3ForcePathStyle: "true"
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: velero
+
+  # Grafana dashboard ID 16829 — provisioned via ConfigMap sidecar (same pattern as monitoring stack)
+  # Add dashboard JSON to templates/dashboards.yaml after confirming Grafana sidecar label selector.

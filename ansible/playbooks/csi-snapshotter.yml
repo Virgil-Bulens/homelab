@@ -1,0 +1,43 @@
+---
+# Install CSI external-snapshotter v8.5.0 on the cluster.
+# Required by Longhorn 1.11.1 for CSI snapshot support (Velero data movement).
+# Applies snapshot CRDs + common snapshot controller via kubectl on the control plane node.
+# Safe to re-run — kubectl apply is idempotent.
+- name: Install CSI external-snapshotter
+  hosts: control_plane
+  run_once: true
+  become: true
+
+  vars:
+    snapshotter_version: "v8.5.0"
+    snapshotter_base_url: "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ snapshotter_version }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Apply VolumeSnapshot CRDs
+      ansible.builtin.command:
+        cmd: >
+          kubectl apply --server-side -f
+          {{ snapshotter_base_url }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+          -f {{ snapshotter_base_url }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+          -f {{ snapshotter_base_url }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      changed_when: true
+
+    - name: Apply snapshot controller RBAC and Deployment
+      ansible.builtin.command:
+        cmd: >
+          kubectl apply --server-side -f
+          {{ snapshotter_base_url }}/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+          -f {{ snapshotter_base_url }}/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      changed_when: true
+
+    - name: Wait for snapshot-controller rollout
+      ansible.builtin.command:
+        cmd: kubectl rollout status deployment/snapshot-controller -n kube-system --timeout=120s
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      changed_when: false
