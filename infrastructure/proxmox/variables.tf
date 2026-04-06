@@ -92,7 +92,7 @@ variable "worker_memory" {
 variable "worker_disk_size" {
   description = "Disk size in GB"
   type        = number
-  default     = 50
+  default     = 80
 }
 
 variable "control_plane_mac" {
