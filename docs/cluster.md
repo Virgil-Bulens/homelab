@@ -5,8 +5,8 @@ flowchart TD
         ts_net["Tailscale Network"]
     end
     subgraph networking__ns["networking"]
-        networking__virg_be_wildcard["virg.be\n(Certificate)"]
-        networking__homelab["homelab\n(Gateway · 192.168.2.100)"]
+        networking__virg_be_wildcard["virg.be · (Certificate)"]
+        networking__homelab["homelab · (Gateway · 192.168.2.100)"]
     end
     subgraph argocd__ns["argocd"]
         argocd__argo_cd["argo-cd"]
@@ -23,7 +23,7 @@ flowchart TD
     end
     subgraph tailscale__ns["tailscale"]
         tailscale__tailscale_operator["tailscale-operator"]
-        tailscale__homelab_subnet_router["homelab-subnet-router\n(Connector)"]
+        tailscale__homelab_subnet_router["homelab-subnet-router · (Connector)"]
     end
     subgraph longhorn_system__ns["longhorn‑system"]
         longhorn_system__longhorn["longhorn"]
@@ -35,9 +35,9 @@ flowchart TD
         monitoring__monitoring_grafana["monitoring-grafana"]
     end
     subgraph cluster_scoped__ns["cluster‑scoped"]
-        cluster_scoped__letsencrypt_staging["letsencrypt-staging\n(ClusterIssuer)"]
-        cluster_scoped__letsencrypt_prod["letsencrypt-prod\n(ClusterIssuer)"]
-        cluster_scoped__homelab_pool["LB pool\n192.168.2.100–192.168.2.200"]
+        cluster_scoped__letsencrypt_staging["letsencrypt-staging · (ClusterIssuer)"]
+        cluster_scoped__letsencrypt_prod["letsencrypt-prod · (ClusterIssuer)"]
+        cluster_scoped__homelab_pool["LB pool · 192.168.2.100–192.168.2.200"]
     end
     subgraph authentik__ns["authentik"]
         authentik__authentik["authentik"]
