@@ -40,6 +40,16 @@ authentik:
     ingress:
       enabled: false  # served via Gateway HTTPRoute
 
+    volumeMounts:
+      - name: blueprints
+        mountPath: /blueprints
+        readOnly: true
+
+    volumes:
+      - name: blueprints
+        configMap:
+          name: authentik-blueprints
+
   prometheus:
     rules:
       enabled: true
