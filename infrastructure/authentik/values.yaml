@@ -36,6 +36,9 @@ authentik:
           secretKeyRef:
             name: authentik-pg-credentials
             key: password
+      # Blueprint discovery directory (mounted ConfigMap)
+      - name: AUTHENTIK_BLUEPRINTS_DIR
+        value: /blueprints
 
   server:
     ingress:
