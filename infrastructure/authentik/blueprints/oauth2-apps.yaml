@@ -1,0 +1,35 @@
+---
+version: 1
+metadata:
+  name: "oauth2-providers"
+entries:
+  # ArgoCD OAuth2 Application
+  - model: authentik_providers_oauth2.oauth2provider
+    identifiers:
+      name: argocd
+    attrs:
+      name: argocd
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      token_introspection_endpoint: ""
+  - model: authentik_core.application
+    identifiers:
+      name: argocd
+    attrs:
+      name: argocd
+      slug: argocd
+      provider: !Find [authentik_providers_oauth2.oauth2provider, [name, argocd]]
+  
+  # Grafana OAuth2 Application
+  - model: authentik_providers_oauth2.oauth2provider
+    identifiers:
+      name: grafana
+    attrs:
+      name: grafana
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+  - model: authentik_core.application
+    identifiers:
+      name: grafana
+    attrs:
+      name: grafana
+      slug: grafana
+      provider: !Find [authentik_providers_oauth2.oauth2provider, [name, grafana]]

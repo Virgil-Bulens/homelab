@@ -3,6 +3,11 @@ authentik:
   postgresql:
     enabled: false
 
+  # Load blueprints from ConfigMap
+  blueprints:
+    configMaps:
+      - authentik-blueprints
+
   authentik:
     # Placeholder — overridden by AUTHENTIK_SECRET_KEY env var from SealedSecret
     secret_key: "placeholder"
