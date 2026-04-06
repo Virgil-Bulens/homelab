@@ -2,8 +2,8 @@ apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
 metadata:
   name: longhorn-snapshot-vsc
-  # Velero uses this annotation to select the snapshot class for CSI data movement
-  annotations:
+  # Velero selects the snapshot class via label, not annotation (as of Velero v1.14+)
+  labels:
     velero.io/csi-volumesnapshot-class: "true"
 driver: driver.longhorn.io
 deletionPolicy: Delete
