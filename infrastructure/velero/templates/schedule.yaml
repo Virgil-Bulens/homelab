@@ -17,3 +17,4 @@ spec:
       - kube-system
       - kube-public
       - kube-node-lease
+      - monitoring  # ephemeral observability data — Prometheus + Loki not worth backing up

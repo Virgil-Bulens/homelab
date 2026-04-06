@@ -1,0 +1,22 @@
+# Template for ad-hoc manual backups. Apply with:
+#   kubectl apply -f infrastructure/velero/templates/manual-backup-template.yaml
+# Then rename metadata.name to avoid collisions.
+#
+# Do NOT use for the nightly schedule — see schedule.yaml.
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: manual-backup  # rename before applying
+  namespace: velero
+spec:
+  storageLocation: default
+  ttl: 72h
+  defaultVolumesToFsBackup: false
+  snapshotMoveData: true
+  includedNamespaces:
+    - "*"
+  excludedNamespaces:
+    - kube-system
+    - kube-public
+    - kube-node-lease
+    - monitoring  # ephemeral — Prometheus + Loki not worth backing up
