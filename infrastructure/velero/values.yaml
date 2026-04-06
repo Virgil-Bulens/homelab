@@ -4,6 +4,9 @@ velero:
   snapshotsEnabled: false
   defaultVolumesToFsBackup: false
 
+  # bitnami/kubectl versioned tags don't exist on Docker Hub; ArgoCD ServerSideApply handles CRD updates.
+  upgradeCRDs: false
+
   # Node agent required for Longhorn block volume access (mounts snapshot clone PVCs).
   deployNodeAgent: true
   nodeAgent:
