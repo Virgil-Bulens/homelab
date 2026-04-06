@@ -227,7 +227,7 @@ def generate(nodes, routes, public_hostnames):
         lines.append(f'    subgraph {node_id(ns, "ns")}["{ns_label}"]')
         for n in by_ns[ns]:
             nid = node_id(n["namespace"], n["name"])
-            label = n["label"].replace("\n", "\\n")
+            label = n["label"].replace("\n", " · ")
             lines.append(f'        {nid}["{label}"]')
         lines.append("    end")
 
