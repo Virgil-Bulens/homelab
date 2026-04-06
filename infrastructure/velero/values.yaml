@@ -12,6 +12,15 @@ velero:
   nodeAgent:
     privileged: true
 
+  # AWS plugin required for S3-compatible BSL (Cloudflare R2 uses S3 API).
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: velero/velero-plugin-for-aws:v1.12.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
+
   credentials:
     useSecret: true
     existingSecret: velero-r2-credentials
