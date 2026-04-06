@@ -61,7 +61,7 @@ variable "control_plane_cores" {
 variable "control_plane_memory" {
   description = "Memory in MB"
   type        = number
-  default     = 4096
+  default     = 8192
 }
 
 variable "control_plane_disk_size" {
