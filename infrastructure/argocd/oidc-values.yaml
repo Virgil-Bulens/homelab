@@ -13,3 +13,8 @@ argo-cd:
           - openid
           - profile
           - email
+          - groups
+        groupClaim: groups
+    rbac:
+      policy.csv: |
+        g, app:argocd, role:admin

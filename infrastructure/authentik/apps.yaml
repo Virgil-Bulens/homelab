@@ -37,6 +37,11 @@ apps:
                 - openid
                 - profile
                 - email
+                - groups
+              groupClaim: groups
+          rbac:
+            policy.csv: |
+              g, app:argocd, role:admin
 
   - name: grafana
     namespace: monitoring
@@ -68,3 +73,4 @@ apps:
               name_attribute_path: name
               use_pkce: true
               use_id_token: true
+              role_attribute_path: "contains(groups[*], 'app:grafana') && 'Admin' || 'Viewer'"

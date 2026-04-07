@@ -144,6 +144,24 @@ def generate_blueprint(apps: list[dict]) -> str:
         "entries:",
     ]
 
+    # Shared groups scope mapping — emits list of group names as 'groups' claim
+    lines += [
+        f"",
+        f"  # Groups scope mapping — shared across all apps",
+        f"  - model: authentik_providers_oauth2.scopemapping",
+        f"    state: present",
+        f"    id: groups-scope",
+        f"    identifiers:",
+        f"      name: homelab groups",
+        f"      scope_name: groups",
+        f"    attrs:",
+        f"      name: homelab groups",
+        f"      scope_name: groups",
+        f"      description: Group membership",
+        f"      expression: |",
+        f"        return [g.name for g in request.user.ak_groups.all()]",
+    ]
+
     for app in apps:
         name = app["name"]
         slug = app.get("slug", name)
@@ -172,6 +190,7 @@ def generate_blueprint(apps: list[dict]) -> str:
             f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]",
             f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]",
             f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]",
+            f"        - !KeyOf groups-scope",
             f"      redirect_uris:",
         ]
         for uri in app["redirect_uris"]:

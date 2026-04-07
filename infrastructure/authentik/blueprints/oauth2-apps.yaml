@@ -6,6 +6,20 @@ metadata:
   name: "oauth2-apps"
 entries:
 
+  # Groups scope mapping — shared across all apps
+  - model: authentik_providers_oauth2.scopemapping
+    state: present
+    id: groups-scope
+    identifiers:
+      name: homelab groups
+      scope_name: groups
+    attrs:
+      name: homelab groups
+      scope_name: groups
+      description: Group membership
+      expression: |
+        return [g.name for g in request.user.ak_groups.all()]
+
   # ArgoCD OAuth2 Provider
   - model: authentik_providers_oauth2.oauth2provider
     state: present
@@ -23,6 +37,7 @@ entries:
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - !KeyOf groups-scope
       redirect_uris:
         - matching_mode: strict
           url: "https://argocd.virg.be/auth/callback"
@@ -91,6 +106,7 @@ entries:
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - !KeyOf groups-scope
       redirect_uris:
         - matching_mode: strict
           url: "https://grafana.virg.be/login/generic_oauth"
