@@ -14,6 +14,7 @@ Requires:
   - kubeseal in PATH
   - SEALED_SECRETS_CERT env var: base64-encoded PEM of the controller's public cert
     (fetch once: kubeseal --fetch-cert ... | base64 -w0)
+  - AUTHENTIK_ADMIN_EMAIL env var: email of the Authentik admin user (first run only)
 
 Run from repo root.
 """
@@ -27,6 +28,7 @@ import uuid
 import secrets as secrets_module
 from pathlib import Path
 
+
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -38,6 +40,7 @@ OIDC_ENV_VALUES = REPO_ROOT / "infrastructure/authentik/oidc-env-values.yaml"
 CONTROLLER_NAME = "sealed-secrets"
 CONTROLLER_NS = "sealed-secrets"
 CLUSTER_INFRA_DIR = REPO_ROOT / "clusters/home/infrastructure"
+ADMIN_ENV_SEALED = AUTHENTIK_TEMPLATES / "admin-env-sealed.yaml"
 
 
 class _LiteralBlockDumper(yaml.Dumper):
@@ -306,6 +309,44 @@ def patch_cluster_application(app: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Admin email secret
+# ---------------------------------------------------------------------------
+
+def ensure_admin_email_secret(cert_file: str) -> bool:
+    """Seal AUTHENTIK_ADMIN_EMAIL into authentik-admin-env if not already present.
+
+    Returns True if a new secret was created (caller should treat as new credentials).
+    Skips silently if the sealed file already exists (rotation = delete file + push).
+    Exits with an error if AUTHENTIK_ADMIN_EMAIL is not set and the file is missing.
+    """
+    if ADMIN_ENV_SEALED.exists():
+        print("[skip]      admin-env: SealedSecret already exists")
+        return False
+
+    email = os.environ.get("AUTHENTIK_ADMIN_EMAIL")
+    if not email:
+        print(
+            "ERROR: AUTHENTIK_ADMIN_EMAIL env var not set and "
+            f"{ADMIN_ENV_SEALED.relative_to(REPO_ROOT)} does not exist.\n"
+            "Set AUTHENTIK_ADMIN_EMAIL to your Authentik admin email and re-run.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    print("[provision] admin-env: sealing AUTHENTIK_ADMIN_EMAIL...")
+    sealed = kubeseal(
+        make_secret("authentik-admin-env", "authentik", {
+            "AUTHENTIK_ADMIN_EMAIL": email,
+        }),
+        "authentik",
+        cert_file,
+    )
+    ADMIN_ENV_SEALED.write_text(sealed)
+    print(f"            → {ADMIN_ENV_SEALED.relative_to(REPO_ROOT)}")
+    return True
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -315,6 +356,9 @@ def main():
 
     try:
         any_new = False
+
+        # Seal admin email (idempotent — skips if file already exists)
+        any_new = ensure_admin_email_secret(cert_file) or any_new
 
         for app in apps:
             name = app["name"]

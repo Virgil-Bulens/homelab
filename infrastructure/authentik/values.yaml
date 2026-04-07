@@ -23,6 +23,12 @@ authentik:
       password: "placeholder"
 
   global:
+    envFrom:
+      # Admin user email — used by blueprints via !Env AUTHENTIK_ADMIN_EMAIL
+      # Never put the email directly in Git; rotate by deleting admin-env-sealed.yaml and pushing
+      - secretRef:
+          name: authentik-admin-env
+          optional: false
     env:
       # secret_key from SealedSecret (cookie signing, unique user IDs — never rotate after first install)
       - name: AUTHENTIK_SECRET_KEY

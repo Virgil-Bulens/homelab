@@ -54,6 +54,7 @@ jobs:
         id: provision
         env:
           SEALED_SECRETS_CERT: ${{ secrets.SEALED_SECRETS_CERT }}
+          AUTHENTIK_ADMIN_EMAIL: ${{ secrets.AUTHENTIK_ADMIN_EMAIL }}
         # Exit 2 = new credentials provisioned; exit 0 = nothing new.
         # `|| [[ $? -eq 2 ]]` prevents the step from failing on exit 2.
         run: |
@@ -77,13 +78,15 @@ jobs:
           # trigger an ArgoCD hard refresh, then poll until all versions have advanced.
           echo "Recording current secret resourceVersions..."
           declare -A OLD_VERSIONS
-          for app in $(python3 -c "
+          # Track all *-oidc-env secrets plus the admin-env secret
+          SECRETS_TO_WATCH=$(python3 -c "
           import yaml
           with open('infrastructure/authentik/apps.yaml') as f:
               apps = yaml.safe_load(f)['apps']
-          for a in apps: print(a['name'])
-          "); do
-            SECRET="${app}-oidc-env"
+          for a in apps: print(a['name'] + '-oidc-env')
+          print('authentik-admin-env')
+          ")
+          for SECRET in $SECRETS_TO_WATCH; do
             VER=$(kubectl get secret -n authentik "$SECRET" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "0")
             OLD_VERSIONS[$SECRET]=$VER
             echo "  $SECRET: resourceVersion=$VER"
