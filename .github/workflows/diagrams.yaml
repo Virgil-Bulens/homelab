@@ -33,7 +33,7 @@ jobs:
         run: python scripts/generate-diagram.py infrastructure/proxmox docs/infrastructure.md
 
       - name: Commit updated diagram
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: regenerate infrastructure diagram [skip ci]"
           file_pattern: "docs/infrastructure.md"
@@ -54,7 +54,7 @@ jobs:
         run: python scripts/generate-cluster-diagram.py infrastructure/ docs/cluster.md
 
       - name: Commit updated diagram
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: regenerate cluster diagram [skip ci]"
           file_pattern: "docs/cluster.md"
