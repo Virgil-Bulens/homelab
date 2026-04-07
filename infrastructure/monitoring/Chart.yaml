@@ -5,11 +5,11 @@ version: 1.0.0
 description: Observability stack — Prometheus, Grafana, Alertmanager, Loki, Promtail
 dependencies:
   - name: kube-prometheus-stack
-    version: "65.3.1"
+    version: "65.8.1"
     repository: https://prometheus-community.github.io/helm-charts
   - name: loki
-    version: "6.7.4"
+    version: "6.55.0"
     repository: https://grafana.github.io/helm-charts
   - name: promtail
-    version: "6.16.6"
+    version: "6.17.1"
     repository: https://grafana.github.io/helm-charts
