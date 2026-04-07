@@ -44,6 +44,8 @@ entries:
       redirect_uris:
         - matching_mode: strict
           url: "https://argocd.virg.be/auth/callback"
+        - matching_mode: strict
+          url: "https://argocd.virg.be/login"
       client_type: confidential
       logout_uri: "https://argocd.virg.be/login"
 

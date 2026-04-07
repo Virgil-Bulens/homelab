@@ -18,6 +18,7 @@ apps:
     group: "app:argocd"
     redirect_uris:
       - "https://argocd.virg.be/auth/callback"
+      - "https://argocd.virg.be/login"
     post_logout_redirect_uri: "https://argocd.virg.be/login"
     launch_url: "https://argocd.virg.be"
     scim: null
