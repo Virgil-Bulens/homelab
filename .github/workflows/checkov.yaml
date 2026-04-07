@@ -1,0 +1,49 @@
+---
+name: Checkov
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
+      - "apps/**"
+      - ".github/workflows/**"
+      - ".checkov.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
+      - "apps/**"
+      - ".checkov.yaml"
+  workflow_dispatch:
+
+jobs:
+  checkov:
+    name: IaC security scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # required to upload SARIF to GitHub Security tab
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrew/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform,helm,github_actions
+          config_file: .checkov.yaml
+          # Write SARIF for the Security tab; CLI output goes to the job log automatically.
+          output_format: sarif
+          output_file_path: results.sarif
+          soft_fail: false
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        # Run even when Checkov fails so the Security tab is always up to date.
+        if: always()
+        with:
+          sarif_file: results.sarif

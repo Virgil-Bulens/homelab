@@ -1,0 +1,19 @@
+---
+# Checkov configuration for the homelab repo.
+# Scans Terraform, Helm charts, and GitHub Actions workflows.
+#
+# Skip rationale:
+#   CKV_K8S_21 — "Default namespace should not be used"
+#                False positive: Helm renders without namespace context (shows "default"),
+#                but ArgoCD deploys every chart to a dedicated namespace.
+#   CKV_K8S_15 — "Image Pull Policy should be Always"
+#                Intentional: IfNotPresent is correct for pinned semver tags and avoids
+#                unnecessary registry pulls. Always is only needed for mutable tags (e.g. :latest).
+#   CKV_K8S_43 — "Image should use digest"
+#                Upstream Helm charts reference images by tag, not digest. Digest pinning
+#                is managed by Renovate, not chart values.
+
+skip-check:
+  - CKV_K8S_21
+  - CKV_K8S_15
+  - CKV_K8S_43
