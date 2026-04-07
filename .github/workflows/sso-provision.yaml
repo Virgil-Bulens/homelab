@@ -32,20 +32,45 @@ jobs:
             | tar -xz kubeseal
           sudo mv kubeseal /usr/local/bin/
 
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
+          tags: tag:ci
+          version: "1.94.2"
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
       - name: Install Python deps
         run: pip install pyyaml
 
       - name: Run provision script
+        id: provision
         env:
           SEALED_SECRETS_CERT: ${{ secrets.SEALED_SECRETS_CERT }}
-        run: python3 scripts/provision-sso.py
+        # Exit 2 = new credentials provisioned; exit 0 = nothing new.
+        # `|| [[ $? -eq 2 ]]` prevents the step from failing on exit 2.
+        run: |
+          python3 scripts/provision-sso.py && echo "new_credentials=false" >> "$GITHUB_OUTPUT" \
+            || { [[ $? -eq 2 ]] && echo "new_credentials=true" >> "$GITHUB_OUTPUT"; }
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          # Only commit if there are changes
           git diff --staged --quiet && echo "No changes to commit." && exit 0
           git commit -m "chore: provision SSO credentials [skip ci]"
           git push
+
+      - name: Restart Authentik to pick up new credentials
+        if: steps.provision.outputs.new_credentials == 'true'
+        run: |
+          kubectl rollout restart deployment/authentik-server deployment/authentik-worker -n authentik
+          kubectl rollout status deployment/authentik-server -n authentik --timeout=120s
+          kubectl rollout status deployment/authentik-worker -n authentik --timeout=120s
