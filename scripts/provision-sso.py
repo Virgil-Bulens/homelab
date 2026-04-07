@@ -165,6 +165,10 @@ def generate_blueprint(apps: list[dict]) -> str:
             f"      client_id: !Env {prefix}_CLIENT_ID",
             f"      client_secret: !Env {prefix}_CLIENT_SECRET",
             f"      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Internal JWT Certificate]]",
+            f"      property_mappings:",
+            f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]",
+            f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]",
+            f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]",
             f"      redirect_uris:",
         ]
         for uri in app["redirect_uris"]:
