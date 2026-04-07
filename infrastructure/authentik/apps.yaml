@@ -50,6 +50,8 @@ apps:
         grafana:
           envFromSecret: "grafana-oidc"
           grafana.ini:
+            server:
+              root_url: "https://grafana.virg.be"
             auth.generic_oauth:
               enabled: true
               name: Authentik
