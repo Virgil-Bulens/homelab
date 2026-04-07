@@ -13,6 +13,7 @@ spec:
     helm:
       valueFiles:
         - values.yaml
+        - oidc-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
