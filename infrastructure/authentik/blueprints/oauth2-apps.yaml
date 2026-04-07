@@ -31,6 +31,7 @@ entries:
   # ArgoCD Application
   - model: authentik_core.application
     state: present
+    id: argocd-app
     identifiers:
       slug: argocd
     attrs:
@@ -39,6 +40,39 @@ entries:
       provider: !KeyOf argocd-oauth2
       meta_launch_url: "https://argocd.virg.be"
       backchannel_providers: []
+
+  # ArgoCD Group
+  - model: authentik_core.group
+    state: present
+    id: argocd-group
+    identifiers:
+      name: app:argocd
+    attrs:
+      name: app:argocd
+      users:
+        - !Find [authentik_core.user, [email, !Env AUTHENTIK_ADMIN_EMAIL]]
+
+  # ArgoCD Policy Binding — requires group membership
+  - model: authentik_policies_expression.expressionpolicy
+    state: present
+    id: argocd-group-policy
+    identifiers:
+      name: argocd-group-access
+    attrs:
+      name: argocd-group-access
+      expression: "return ak_is_group_member(request.user, name=\"app:argocd\")"
+
+  - model: authentik_policies.policybinding
+    state: present
+    id: argocd-app-binding
+    identifiers:
+      order: 0
+      target: !KeyOf argocd-app
+      policy: !KeyOf argocd-group-policy
+    attrs:
+      target: !KeyOf argocd-app
+      policy: !KeyOf argocd-group-policy
+      order: 0
 
   # Grafana OAuth2 Provider
   - model: authentik_providers_oauth2.oauth2provider
@@ -65,6 +99,7 @@ entries:
   # Grafana Application
   - model: authentik_core.application
     state: present
+    id: grafana-app
     identifiers:
       slug: grafana
     attrs:
@@ -73,3 +108,36 @@ entries:
       provider: !KeyOf grafana-oauth2
       meta_launch_url: "https://grafana.virg.be"
       backchannel_providers: []
+
+  # Grafana Group
+  - model: authentik_core.group
+    state: present
+    id: grafana-group
+    identifiers:
+      name: app:grafana
+    attrs:
+      name: app:grafana
+      users:
+        - !Find [authentik_core.user, [email, !Env AUTHENTIK_ADMIN_EMAIL]]
+
+  # Grafana Policy Binding — requires group membership
+  - model: authentik_policies_expression.expressionpolicy
+    state: present
+    id: grafana-group-policy
+    identifiers:
+      name: grafana-group-access
+    attrs:
+      name: grafana-group-access
+      expression: "return ak_is_group_member(request.user, name=\"app:grafana\")"
+
+  - model: authentik_policies.policybinding
+    state: present
+    id: grafana-app-binding
+    identifiers:
+      order: 0
+      target: !KeyOf grafana-app
+      policy: !KeyOf grafana-group-policy
+    attrs:
+      target: !KeyOf grafana-app
+      policy: !KeyOf grafana-group-policy
+      order: 0
