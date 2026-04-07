@@ -1,5 +1,8 @@
 ---
 extends: default
+# Helm templates with Go template directives ({{ }}) are not valid standalone YAML
+ignore: |
+  infrastructure/authentik/templates/blueprint-example.yaml
 rules:
   line-length:
     max: 150
