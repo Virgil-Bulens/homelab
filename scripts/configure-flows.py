@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-configure-flows.py — Configure Authentik authentication flows via API.
+configure-flows.py — Configure Authentik authentication flows and policies via API.
 
 Commands:
-  --create-flows   Build the homelab-passwordless-login flow (idempotent).
-                   Does NOT activate it. Run this first, then enroll your passkey.
-  --swap-flow      Replace the default authentication flow with the passwordless one.
-                   Only run AFTER enrolling a passkey and verifying it works.
-  --status         Print current state: flow exists? default flow set to which slug?
+  --create-flows     Build the homelab-passwordless-login flow (idempotent).
+                     Does NOT activate it. Run this first, then enroll your passkey.
+  --swap-flow        Replace the default authentication flow with the passwordless one.
+                     Only run AFTER enrolling a passkey and verifying it works.
+  --create-policies  Create the three conditional access expression policies (idempotent).
+                     Requires GeoIP DB to be loaded (can_geo_ip in /api/v3/root/config/).
+  --bind-policies    Bind the policies to homelab-passwordless-login flow.
+                     Idempotent. Policies apply to ALL authentications — test first.
+  --status           Print current state: flow exists? default flow? policies bound?
 
 Requires:
   AUTHENTIK_URL   Base URL of Authentik (e.g. https://authentik.virg.be)
@@ -18,6 +22,11 @@ Flow design (homelab-passwordless-login):
   2. AuthenticatorValidateStage — webauthn primary, totp + static as fallback
      not_configured_action=deny (users without any MFA device cannot proceed)
   3. UserLoginStage (reuse existing default-authentication-login)
+
+Conditional access policies (bound to flow, evaluated before stages):
+  order 0 — Belgium-only GeoIP: non-BE source IPs → soft block (generic error)
+  order 1 — Bad IP/Tor reputation: score < -5 → soft block
+  order 2 — LAN detection: sets ak_message context var, always passes
 
 WARNING: Never run --swap-flow before:
   1. Creating the flow with --create-flows
@@ -200,11 +209,143 @@ def cmd_swap_flow():
     print("Verify: open a new incognito window and confirm login still works.")
 
 
+POLICY_BELGIUM = "homelab-geoip-belgium"
+POLICY_REPUTATION = "homelab-reputation-block"
+POLICY_LAN = "homelab-lan-detection"
+
+# Belgium ISO country code
+_BELGIUM_EXPR = """\
+from authentik.events.context_processors.mmdb import CONTEXT_KEY_CITY
+city = request.context.get(CONTEXT_KEY_CITY)
+if city is None:
+    # No GeoIP data — fail open (don't block unknown IPs)
+    return True
+country = city.get("country", {}).get("iso_code", "")
+if country != "BE":
+    ak_message("Access restricted to Belgium.")
+    return False
+return True
+"""
+
+_LAN_EXPR = """\
+import ipaddress
+try:
+    ip = ipaddress.ip_address(request.http_request.META.get("REMOTE_ADDR", ""))
+    context["is_lan"] = ip.is_private
+except Exception:
+    context["is_lan"] = False
+return True
+"""
+
+
+def cmd_create_policies():
+    # Check GeoIP available
+    cfg = api("get", "/root/config/")
+    if "can_geo_ip" not in cfg.get("capabilities", []):
+        print("ERROR: GeoIP not available in this Authentik instance", file=sys.stderr)
+        sys.exit(1)
+    print("[ok] GeoIP available")
+
+    # Belgium-only expression policy
+    get_or_create(
+        "/policies/expression/", "/policies/expression/",
+        {"name": POLICY_BELGIUM},
+        {
+            "name": POLICY_BELGIUM,
+            "execution_logging": False,
+            "expression": _BELGIUM_EXPR,
+        },
+        f"ExpressionPolicy '{POLICY_BELGIUM}'"
+    )
+
+    # Reputation policy (bad IP / Tor)
+    get_or_create(
+        "/policies/reputation/", "/policies/reputation/",
+        {"name": POLICY_REPUTATION},
+        {
+            "name": POLICY_REPUTATION,
+            "execution_logging": False,
+            # Block IPs with reputation score below -5
+            "threshold": -5,
+            "check_ip": True,
+            "check_username": False,
+        },
+        f"ReputationPolicy '{POLICY_REPUTATION}'"
+    )
+
+    # LAN detection expression policy (always passes, sets context)
+    get_or_create(
+        "/policies/expression/", "/policies/expression/",
+        {"name": POLICY_LAN},
+        {
+            "name": POLICY_LAN,
+            "execution_logging": False,
+            "expression": _LAN_EXPR,
+        },
+        f"ExpressionPolicy '{POLICY_LAN}'"
+    )
+
+    print("\nPolicies created. Run --bind-policies to attach them to the login flow.")
+
+
+def cmd_bind_policies():
+    flow = find_flow(FLOW_SLUG)
+    if not flow:
+        print(f"ERROR: flow '{FLOW_SLUG}' not found — run --create-flows first", file=sys.stderr)
+        sys.exit(1)
+
+    # Policies are bound to FlowStageBindings (each is a PolicyBindingModel).
+    # Bind to the identification stage binding (order=10) — runs before any stage.
+    stage_bindings = api("get", "/flows/bindings/", params={"target": flow["pk"]}).get("results", [])
+    id_binding = next((b for b in stage_bindings if b["order"] == 10), None)
+    if not id_binding:
+        print("ERROR: identification stage binding (order=10) not found", file=sys.stderr)
+        sys.exit(1)
+    target_pk = id_binding["pk"]
+    print(f"Binding policies to stage binding {target_pk} (order=10, {id_binding['stage_obj']['name']})")
+
+    policy_map = [
+        (0, "/policies/expression/", POLICY_BELGIUM),
+        (1, "/policies/reputation/", POLICY_REPUTATION),
+        (2, "/policies/expression/", POLICY_LAN),
+    ]
+
+    for order, list_path, policy_name in policy_map:
+        results = api("get", list_path, params={"name": policy_name}).get("results", [])
+        if not results:
+            print(f"ERROR: policy '{policy_name}' not found — run --create-policies first", file=sys.stderr)
+            sys.exit(1)
+        policy = results[0]
+
+        # Can't filter /policies/bindings/ by FlowStageBinding target — search by policy pk
+        existing = api("get", "/policies/bindings/", params={"policy": policy["pk"]}).get("results", [])
+        already = next((b for b in existing if b.get("target") == target_pk), None)
+        if already:
+            print(f"[exists]  PolicyBinding order={order} policy={policy_name}: {already['pk']}")
+        else:
+            payload = {
+                "target": target_pk,
+                "policy": policy["pk"],
+                "order": order,
+                "enabled": True,
+                "timeout": 30,
+                "failure_result": True,
+            }
+            obj = api("post", "/policies/bindings/", json=payload)
+            print(f"[created] PolicyBinding order={order} policy={policy_name}: {obj['pk']}")
+
+    print("\nPolicies bound. Verify:")
+    print("  - Login from BE IP still works")
+    print("  - Check Authentik event log for policy execution events")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--create-flows", action="store_true")
     group.add_argument("--swap-flow", action="store_true")
+    group.add_argument("--create-policies", action="store_true")
+    group.add_argument("--bind-policies", action="store_true")
     group.add_argument("--status", action="store_true")
     args = parser.parse_args()
 
@@ -214,6 +355,10 @@ def main():
         cmd_create_flows()
     elif args.swap_flow:
         cmd_swap_flow()
+    elif args.create_policies:
+        cmd_create_policies()
+    elif args.bind_policies:
+        cmd_bind_policies()
 
 
 if __name__ == "__main__":
