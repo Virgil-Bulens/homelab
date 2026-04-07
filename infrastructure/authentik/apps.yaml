@@ -5,6 +5,8 @@
 #   - Creates SealedSecrets in the app namespace and the authentik namespace
 #   - Regenerates the Authentik blueprint ConfigMap
 #   - Updates the Authentik Helm envFrom values
+#   - Generates infrastructure/<chart_path>/oidc-values.yaml (Helm OIDC overlay)
+#   - Patches clusters/home/infrastructure/<chart_path>.yaml to include oidc-values.yaml
 #
 # To rotate credentials: delete the two *-oidc*-sealed.yaml files and push.
 # See: brain/Procedures/Enable SSO for an App.md
@@ -17,6 +19,20 @@ apps:
       - "https://argocd.virg.be/auth/callback"
     launch_url: "https://argocd.virg.be"
     scim: null
+    oidc_helm_patch:
+      argo-cd:
+        configs:
+          cm:
+            url: "https://argocd.virg.be"
+            oidc.config: |
+              name: Authentik
+              issuer: https://authentik.virg.be/application/o/argocd/
+              clientID: $argocd-oidc:client_id
+              clientSecret: $argocd-oidc:client_secret
+              requestedScopes:
+                - openid
+                - profile
+                - email
 
   - name: grafana
     namespace: monitoring
@@ -26,3 +42,18 @@ apps:
       - "https://grafana.virg.be/login/generic_oauth"
     launch_url: "https://grafana.virg.be"
     scim: null
+    oidc_helm_patch:
+      kube-prometheus-stack:
+        grafana:
+          envFromSecret: "grafana-oidc"
+          grafana.ini:
+            auth.generic_oauth:
+              enabled: true
+              name: Authentik
+              allow_sign_up: true
+              client_id: "${client_id}"
+              client_secret: "${client_secret}"
+              scopes: openid profile email
+              auth_url: https://authentik.virg.be/application/o/authorize/
+              token_url: https://authentik.virg.be/application/o/token/
+              api_url: https://authentik.virg.be/application/o/userinfo/
