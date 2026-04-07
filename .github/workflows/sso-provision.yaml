@@ -68,6 +68,44 @@ jobs:
           git commit -m "chore: provision SSO credentials [skip ci]"
           git push
 
+      - name: Wait for ArgoCD to unseal new secrets
+        if: steps.provision.outputs.new_credentials == 'true'
+        run: |
+          # Authentik must not restart until the Sealed Secrets controller has unsealed
+          # the new *-oidc-env secrets. Strategy: record the current Secret resourceVersions,
+          # trigger an ArgoCD hard refresh, then poll until all versions have advanced.
+          echo "Recording current secret resourceVersions..."
+          declare -A OLD_VERSIONS
+          for app in $(python3 -c "
+          import yaml
+          with open('infrastructure/authentik/apps.yaml') as f:
+              apps = yaml.safe_load(f)['apps']
+          for a in apps: print(a['name'])
+          "); do
+            SECRET="${app}-oidc-env"
+            VER=$(kubectl get secret -n authentik "$SECRET" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "0")
+            OLD_VERSIONS[$SECRET]=$VER
+            echo "  $SECRET: resourceVersion=$VER"
+          done
+
+          echo "Triggering ArgoCD hard refresh for authentik..."
+          kubectl annotate application -n argocd authentik argocd.argoproj.io/refresh=hard --overwrite
+
+          echo "Polling for updated secrets (max 5 min)..."
+          for app in "${!OLD_VERSIONS[@]}"; do
+            OLD=${OLD_VERSIONS[$app]}
+            echo "  Waiting for $app to advance past resourceVersion=$OLD..."
+            for i in $(seq 1 30); do
+              NEW=$(kubectl get secret -n authentik "$app" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "0")
+              if [[ "$NEW" != "$OLD" && "$NEW" != "0" ]]; then
+                echo "  $app updated: resourceVersion=$NEW"
+                break
+              fi
+              echo "    attempt $i: still at $NEW, retrying in 10s..."
+              sleep 10
+            done
+          done
+
       - name: Restart Authentik to pick up new credentials
         if: steps.provision.outputs.new_credentials == 'true'
         run: |
