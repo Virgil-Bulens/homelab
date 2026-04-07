@@ -164,6 +164,7 @@ def generate_blueprint(apps: list[dict]) -> str:
             f"      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]",
             f"      client_id: !Env {prefix}_CLIENT_ID",
             f"      client_secret: !Env {prefix}_CLIENT_SECRET",
+            f"      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Internal JWT Certificate]]",
             f"      redirect_uris:",
         ]
         for uri in app["redirect_uris"]:
