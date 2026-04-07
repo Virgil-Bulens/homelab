@@ -18,10 +18,14 @@ on:
       - "infrastructure/tailscale/**"
   workflow_dispatch:
 
+permissions: {}  # deny all by default; each job declares what it needs
+
 jobs:
   proxmox:
     name: Proxmox — Plan / Apply
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: infrastructure/proxmox
@@ -61,6 +65,8 @@ jobs:
   unifi:
     name: UniFi — Plan / Apply
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: infrastructure/unifi
@@ -98,6 +104,8 @@ jobs:
   tailscale:
     name: Tailscale — Plan / Apply
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: infrastructure/tailscale
@@ -129,6 +137,8 @@ jobs:
   cloudflare:
     name: Cloudflare — Plan / Apply
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: infrastructure/cloudflare

@@ -7,10 +7,14 @@ on:
     branches:
       - main
 
+permissions: {}  # deny all by default; each job declares what it needs
+
 jobs:
   gitleaks:
     name: Secret scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
         with:
@@ -23,6 +27,8 @@ jobs:
   yaml-lint:
     name: YAML lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - uses: ibiqlik/action-yamllint@v3

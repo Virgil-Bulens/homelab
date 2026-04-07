@@ -9,6 +9,8 @@ on:
       - scripts/provision-sso.py
   workflow_dispatch:
 
+permissions: {}  # deny all by default; each job declares what it needs
+
 jobs:
   provision:
     name: Provision SSO credentials

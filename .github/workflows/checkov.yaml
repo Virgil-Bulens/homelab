@@ -17,6 +17,8 @@ on:
       - ".checkov.yaml"
   workflow_dispatch:
 
+permissions: {}  # deny all by default; each job declares what it needs
+
 jobs:
   checkov:
     name: IaC security scan

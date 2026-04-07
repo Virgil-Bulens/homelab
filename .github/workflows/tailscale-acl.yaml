@@ -12,6 +12,8 @@ on:
       - "infrastructure/tailscale-acl/acl.hujson"
   workflow_dispatch:
 
+permissions: {}  # deny all by default; each job declares what it needs
+
 jobs:
   acl:
     name: Test / Apply
