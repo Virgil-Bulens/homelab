@@ -45,9 +45,7 @@ entries:
         - matching_mode: strict
           url: "https://argocd.virg.be/auth/callback"
       client_type: confidential
-      post_logout_redirect_uris:
-        - matching_mode: strict
-          url: "https://argocd.virg.be/login"
+      logout_uri: "https://argocd.virg.be/login"
 
   # ArgoCD Application
   - model: authentik_core.application
