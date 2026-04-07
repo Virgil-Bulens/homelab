@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-blueprints-system
+  namespace: authentik
+data:
+  system-config.yaml: |
+{{ .Files.Get "blueprints/system-config.yaml" | indent 4 }}

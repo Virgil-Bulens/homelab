@@ -1,0 +1,21 @@
+# Hand-authored — sets Authentik session lifetime on the default login stage.
+# See: brain/Decisions/2026-04-07-authentik-implementation-plan.md Step 3
+---
+version: 1
+metadata:
+  name: "system-config"
+entries:
+
+  # 24h persistent session on the main authentication login stage
+  - model: authentik_stages_user_login.userloginstage
+    state: present
+    identifiers:
+      name: default-authentication-login
+    attrs:
+      name: default-authentication-login
+      # seconds=0 = browser session; hours=24 = 24h persistent cookie
+      session_duration: "hours=24"
+      network_binding: no_binding
+      geoip_binding: no_binding
+      terminate_other_sessions: false
+      remember_me_offset: "seconds=0"

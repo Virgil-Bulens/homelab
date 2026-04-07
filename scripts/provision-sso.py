@@ -191,6 +191,9 @@ def generate_blueprint(apps: list[dict]) -> str:
             f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]",
             f"        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]",
             f"        - !KeyOf groups-scope",
+            f"      access_code_validity: minutes=5",
+            f"      access_token_validity: hours=24",
+            f"      refresh_token_validity: days=7",
             f"      redirect_uris:",
         ]
         for uri in app["redirect_uris"]:

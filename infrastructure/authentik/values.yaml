@@ -8,6 +8,7 @@ authentik:
   blueprints:
     configMaps:
       - authentik-blueprints-example
+      - authentik-blueprints-system
 
   authentik:
     # Placeholder — overridden by AUTHENTIK_SECRET_KEY env var from SealedSecret
