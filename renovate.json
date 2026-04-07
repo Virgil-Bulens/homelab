@@ -40,6 +40,13 @@
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "GitHub Actions (minor/patch)",
       "groupSlug": "gha-minor-patch"
+    },
+    {
+      "description": "Group docker image minor/patch updates",
+      "matchManagers": ["dockerfile", "kubernetes"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Docker images (minor/patch)",
+      "groupSlug": "docker-minor-patch"
     }
   ]
 }

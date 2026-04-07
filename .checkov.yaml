@@ -12,8 +12,16 @@
 #   CKV_K8S_43 — "Image should use digest"
 #                Upstream Helm charts reference images by tag, not digest. Digest pinning
 #                is managed by Renovate, not chart values.
+#   CKV_K8S_16 — "Container should not be privileged"
+#                Longhorn daemonset requires privileged mode to manage block devices on the host.
+#   CKV_K8S_17 — "Containers should not share the host process ID namespace"
+#   CKV_K8S_19 — "Containers should not share the host network namespace"
+#                prometheus-node-exporter requires host PID and host network to scrape node metrics.
 
 skip-check:
   - CKV_K8S_21
   - CKV_K8S_15
   - CKV_K8S_43
+  - CKV_K8S_16
+  - CKV_K8S_17
+  - CKV_K8S_19
