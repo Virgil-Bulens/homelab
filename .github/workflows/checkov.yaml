@@ -44,7 +44,7 @@ jobs:
           soft_fail: false
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         # Run even when Checkov fails so the Security tab is always up to date.
         if: always()
         with:
