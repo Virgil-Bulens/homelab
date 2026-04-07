@@ -1,0 +1,16 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: authentik-admin-env
+  namespace: authentik
+spec:
+  encryptedData:
+    AUTHENTIK_ADMIN_EMAIL: AgBx/eTEpWPjgJcR1ybo7OnCyHJETcFLfjIUDNPW6zm5cLDi/KH9+ICQ9kTsy+wTkVtbBbXaqzaa8Vx688cgv70itIIyAZypMlpCpC7UFeQ6ID7UTw98M9gse7Yy0YwGt2dy5ZGL3dPw9E8Ts65QSm8/VNXUW7JL1tUMpHspqxWqS3z+vTfwB4H7Vt7z+JekXLlK06Gczfh6JUpqj0EghNHK++2OdCpu5NOD54roWfIFb2DcKBaZ2UJGKjQac+cpr0AEj+wwgfJ2dVVvpI+EcHFxcr2CSCdk47rSZugbrjhdcV6IWnyckMER5NNtZJVQa0quyqT/BHaqSUh4Xp23uLQnb09b0jMlKjDXEnPQJGrausz0J+q+wPSkeAWVkvmdD0cCkKyFD5AN3L+rav6ocvlA85jV40lRjB+x3idBKqy1xCsMquHREaKWI0RTiGZ7RPOBNrdOWb0OsNsqHjllQd+jftFpZMvzvKqVm+O8Ls7F+QkWkMqudUSjKUgz/ed4ollIVj8Wcbehy3EtxaNf2GxLVPwmmrjtkTj+M+h9AeSCV/d7gIZu8sEEN6ho2a5K0oUxd6TIw8V39A/3yYT8PGeWtujC0zN87Kc0Bh+hMlTuaLquVE3sU7Imqjw3TKztnjJoZ6QtTdXepvPBH2HYNLROHe1UZn944zs7sjD8FkWmKviUXlBfkbhOTHR2Xe2HP1w0fy0igPBT+eNWwLIJAE2hdPwf46df+A==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: authentik-admin-env
+      namespace: authentik
+    type: Opaque
