@@ -1,0 +1,28 @@
+---
+# Declarative SSO provisioning for Authentik.
+# Adding an entry here triggers the sso-provision CI workflow, which:
+#   - Generates OIDC client_id + client_secret
+#   - Creates SealedSecrets in the app namespace and the authentik namespace
+#   - Regenerates the Authentik blueprint ConfigMap
+#   - Updates the Authentik Helm envFrom values
+#
+# To rotate credentials: delete the two *-oidc*-sealed.yaml files and push.
+# See: brain/Procedures/Enable SSO for an App.md
+
+apps:
+  - name: argocd
+    namespace: argocd
+    display_name: ArgoCD
+    redirect_uris:
+      - "https://argocd.virg.be/auth/callback"
+    launch_url: "https://argocd.virg.be"
+    scim: null
+
+  - name: grafana
+    namespace: monitoring
+    chart_path: monitoring  # infrastructure/<chart_path>/templates/<name>-oidc-sealed.yaml
+    display_name: Grafana
+    redirect_uris:
+      - "https://grafana.virg.be/login/generic_oauth"
+    launch_url: "https://grafana.virg.be"
+    scim: null

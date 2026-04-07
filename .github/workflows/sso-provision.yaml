@@ -1,0 +1,51 @@
+---
+name: SSO Provision
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - infrastructure/authentik/apps.yaml
+  workflow_dispatch:
+
+jobs:
+  provision:
+    name: Provision SSO credentials
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # needed to push generated SealedSecrets back to the repo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # Use a PAT so the push-back commit triggers downstream workflows.
+          # GITHUB_TOKEN pushes are ignored by Actions to prevent loops.
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install kubeseal
+        run: |
+          KUBESEAL_VERSION=0.27.3
+          curl -sSL \
+            "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz" \
+            | tar -xz kubeseal
+          sudo mv kubeseal /usr/local/bin/
+
+      - name: Install Python deps
+        run: pip install pyyaml
+
+      - name: Run provision script
+        env:
+          SEALED_SECRETS_CERT: ${{ secrets.SEALED_SECRETS_CERT }}
+        run: python3 scripts/provision-sso.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          # Only commit if there are changes
+          git diff --staged --quiet && echo "No changes to commit." && exit 0
+          git commit -m "chore: provision SSO credentials [skip ci]"
+          git push
