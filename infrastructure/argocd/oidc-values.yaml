@@ -4,18 +4,15 @@ argo-cd:
   configs:
     cm:
       url: https://argocd.virg.be
-      oidc.config: |
-        name: Authentik
-        issuer: https://authentik.virg.be/application/o/argocd/
-        clientID: $argocd-oidc:client_id
-        clientSecret: $argocd-oidc:client_secret
-        requestedScopes:
-          - openid
-          - profile
-          - email
-          - groups
-        groupClaim: groups
-        logoutURL: "https://authentik.virg.be/application/o/argocd/end-session/?post_logout_redirect_uri=https%3A%2F%2Fargocd.virg.be%2Flogin"
+      oidc.config: "name: Authentik\nissuer: https://authentik.virg.be/application/o/argocd/\n\
+        clientID: $argocd-oidc:client_id\nclientSecret: $argocd-oidc:client_secret\n\
+        requestedScopes:\n  - openid\n  - profile\n  - email\n  - groups\ngroupClaim:\
+        \ groups\n# Authentik's invalidation flow always renders a static page and\
+        \ ignores\n# post_logout_redirect_uri. Skip end-session and redirect straight\
+        \ to login.\n# Authentik session expires naturally (24h). Disable user can\
+        \ still use ArgoCD\n# until session expires \u2014 acceptable for homelab.\
+        \ True back-channel revocation\n# requires an OIDC backchannel provider (deferred).\n\
+        logoutURL: \"https://argocd.virg.be/login\"\n"
     rbac:
       policy.csv: |
         g, app:argocd, role:admin

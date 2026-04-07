@@ -41,7 +41,12 @@ apps:
                 - email
                 - groups
               groupClaim: groups
-              logoutURL: "https://authentik.virg.be/application/o/argocd/end-session/?post_logout_redirect_uri=https%3A%2F%2Fargocd.virg.be%2Flogin"
+              # Authentik's invalidation flow always renders a static page and ignores
+              # post_logout_redirect_uri. Skip end-session and redirect straight to login.
+              # Authentik session expires naturally (24h). Disable user can still use ArgoCD
+              # until session expires — acceptable for homelab. True back-channel revocation
+              # requires an OIDC backchannel provider (deferred).
+              logoutURL: "https://argocd.virg.be/login"
           rbac:
             policy.csv: |
               g, app:argocd, role:admin
