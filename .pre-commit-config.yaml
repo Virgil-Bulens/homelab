@@ -4,3 +4,5 @@ repos:
     hooks:
       - id: yamllint
         args: [--strict, --config-file=.yamllint]
+        # Helm templates with Go template directives are not valid standalone YAML
+        exclude: ^infrastructure/authentik/templates/blueprint-example\.yaml$

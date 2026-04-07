@@ -1,16 +1,22 @@
 ---
 version: 1
 metadata:
-  name: "oauth2-providers"
+  name: "oauth2-apps"
 entries:
-  # ArgoCD OAuth2 Application
+  # ArgoCD OAuth2 Provider
   - model: authentik_providers_oauth2.oauth2provider
     identifiers:
       name: argocd
     attrs:
       name: argocd
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
-      token_introspection_endpoint: ""
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      redirect_uris:
+        - matching_mode: strict
+          url: "https://argocd.virg.be/auth/callback"
+      client_type: confidential
+
+  # ArgoCD Application
   - model: authentik_core.application
     identifiers:
       name: argocd
@@ -19,13 +25,20 @@ entries:
       slug: argocd
       provider: !Find [authentik_providers_oauth2.oauth2provider, [name, argocd]]
 
-  # Grafana OAuth2 Application
+  # Grafana OAuth2 Provider
   - model: authentik_providers_oauth2.oauth2provider
     identifiers:
       name: grafana
     attrs:
       name: grafana
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      redirect_uris:
+        - matching_mode: strict
+          url: "https://grafana.virg.be/login/generic_oauth"
+      client_type: confidential
+
+  # Grafana Application
   - model: authentik_core.application
     identifiers:
       name: grafana

@@ -6,40 +6,4 @@ metadata:
   namespace: authentik
 data:
   oauth2-apps.yaml: |
-    version: 1
-    metadata:
-      name: oauth2-apps
-    entries:
-      # ArgoCD OAuth2 Provider
-      - model: authentik_providers_oauth2.oauth2provider
-        identifiers:
-          name: argocd
-        attrs:
-          name: argocd
-          client_type: confidential
-          redirect_uris: "https://argocd.virg.be/auth/callback"
-
-      # ArgoCD Application
-      - model: authentik_core.application
-        identifiers:
-          slug: argocd
-        attrs:
-          name: ArgoCD
-          slug: argocd
-
-      # Grafana OAuth2 Provider
-      - model: authentik_providers_oauth2.oauth2provider
-        identifiers:
-          name: grafana
-        attrs:
-          name: grafana
-          client_type: confidential
-          redirect_uris: "https://grafana.virg.be/login/generic_oauth"
-
-      # Grafana Application
-      - model: authentik_core.application
-        identifiers:
-          slug: grafana
-        attrs:
-          name: Grafana
-          slug: grafana
+{{ .Files.Get "blueprints/oauth2-apps.yaml" | indent 4 }}
