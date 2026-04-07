@@ -1,5 +1,9 @@
 extends: default
 
+ignore: |
+  infrastructure/*/templates/
+  infrastructure/*/charts/
+
 rules:
   document-start: disable
   comments-indentation: disable

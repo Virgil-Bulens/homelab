@@ -18,7 +18,9 @@ on:
       - "infrastructure/tailscale/**"
   workflow_dispatch:
 
-permissions: {}  # deny all by default; each job declares what it needs
+# Top-level deny-all: each job below declares only what it needs
+permissions:
+  contents: none
 
 jobs:
   proxmox:
