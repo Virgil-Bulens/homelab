@@ -202,6 +202,12 @@ def generate_blueprint(apps: list[dict]) -> str:
                 f'          url: "{uri}"',
             ]
         lines.append(f"      client_type: confidential")
+        if app.get("post_logout_redirect_uri"):
+            lines += [
+                f"      post_logout_redirect_uris:",
+                f"        - matching_mode: strict",
+                f'          url: "{app["post_logout_redirect_uri"]}"',
+            ]
 
         # SCIM provider (optional)
         if has_scim:

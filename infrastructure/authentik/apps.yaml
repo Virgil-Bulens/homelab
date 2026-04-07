@@ -18,6 +18,7 @@ apps:
     group: "app:argocd"
     redirect_uris:
       - "https://argocd.virg.be/auth/callback"
+    post_logout_redirect_uri: "https://argocd.virg.be/login"
     launch_url: "https://argocd.virg.be"
     scim: null
     # ArgoCD config secret references require this label to be visible to the API server
