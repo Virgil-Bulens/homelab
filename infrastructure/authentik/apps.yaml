@@ -15,6 +15,7 @@ apps:
   - name: argocd
     namespace: argocd
     display_name: ArgoCD
+    group: "app:argocd"
     redirect_uris:
       - "https://argocd.virg.be/auth/callback"
     launch_url: "https://argocd.virg.be"
@@ -41,6 +42,7 @@ apps:
     namespace: monitoring
     chart_path: monitoring  # infrastructure/<chart_path>/templates/<name>-oidc-sealed.yaml
     display_name: Grafana
+    group: "app:grafana"
     redirect_uris:
       - "https://grafana.virg.be/login/generic_oauth"
     launch_url: "https://grafana.virg.be"

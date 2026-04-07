@@ -207,6 +207,7 @@ def generate_blueprint(apps: list[dict]) -> str:
             f"  # {display} Application",
             f"  - model: authentik_core.application",
             f"    state: present",
+            f"    id: {name}-app",
             f"    identifiers:",
             f"      slug: {slug}",
             f"    attrs:",
@@ -223,6 +224,46 @@ def generate_blueprint(apps: list[dict]) -> str:
             ]
         else:
             lines.append(f"      backchannel_providers: []")
+
+        # Group + admin assignment + policy binding (optional — only if group defined)
+        group_name = app.get("group")
+        if group_name:
+            lines += [
+                f"",
+                f"  # {display} Group",
+                f"  - model: authentik_core.group",
+                f"    state: present",
+                f"    id: {name}-group",
+                f"    identifiers:",
+                f"      name: {group_name}",
+                f"    attrs:",
+                f"      name: {group_name}",
+                f"      users:",
+                # Use group.users direction (not user.groups) to avoid replacing entire group list
+                f"        - !Find [authentik_core.user, [email, !Env AUTHENTIK_ADMIN_EMAIL]]",
+                f"",
+                f"  # {display} Policy Binding — requires group membership",
+                f"  - model: authentik_policies_expression.expressionpolicy",
+                f"    state: present",
+                f"    id: {name}-group-policy",
+                f"    identifiers:",
+                f"      name: {name}-group-access",
+                f"    attrs:",
+                f"      name: {name}-group-access",
+                f'      expression: "return ak_is_group_member(request.user, name=\\"{group_name}\\")"',
+                f"",
+                f"  - model: authentik_policies.policybinding",
+                f"    state: present",
+                f"    id: {name}-app-binding",
+                f"    identifiers:",
+                f"      order: 0",
+                f"      target: !KeyOf {name}-app",
+                f"      policy: !KeyOf {name}-group-policy",
+                f"    attrs:",
+                f"      target: !KeyOf {name}-app",
+                f"      policy: !KeyOf {name}-group-policy",
+                f"      order: 0",
+            ]
 
     lines.append("")
     return "\n".join(lines)
