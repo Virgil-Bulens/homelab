@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": ["every weekend"],
+  "timezone": "Europe/Brussels",
+  "labels": ["dependencies"],
+  "separateMajorMinor": true,
+  "packageRules": [
+    {
+      "description": "Group all patch and minor Helm chart updates into a single PR",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Helm charts (minor/patch)",
+      "groupSlug": "helm-minor-patch"
+    },
+    {
+      "description": "One PR per major Helm chart bump — majors need individual review",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Helm chart major: {{depName}}"
+    },
+    {
+      "description": "Group all patch and minor Terraform provider updates",
+      "matchManagers": ["terraform"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Terraform providers (minor/patch)",
+      "groupSlug": "terraform-minor-patch"
+    },
+    {
+      "description": "One PR per major Terraform provider bump",
+      "matchManagers": ["terraform"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Terraform provider major: {{depName}}"
+    },
+    {
+      "description": "Group all GitHub Actions minor/patch updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions (minor/patch)",
+      "groupSlug": "gha-minor-patch"
+    }
+  ]
+}
