@@ -281,6 +281,11 @@ def generate_oidc_env_values(apps: list[dict]) -> str:
         "authentik:",
         "  global:",
         "    envFrom:",
+        # admin-env must be in this list — values.yaml also defines envFrom which Helm
+        # would merge as a list replacement (last file wins), so keep everything here.
+        "      - secretRef:",
+        "          name: authentik-admin-env",
+        "          optional: false",
     ]
     for app in apps:
         name = app["name"]

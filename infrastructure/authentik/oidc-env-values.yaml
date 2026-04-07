@@ -5,6 +5,9 @@ authentik:
   global:
     envFrom:
       - secretRef:
+          name: authentik-admin-env
+          optional: false
+      - secretRef:
           name: argocd-oidc-env
           optional: true
       - secretRef:
