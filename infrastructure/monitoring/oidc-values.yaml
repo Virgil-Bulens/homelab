@@ -20,3 +20,4 @@ kube-prometheus-stack:
         login_attribute_path: preferred_username
         name_attribute_path: name
         use_pkce: true
+        use_id_token: true
