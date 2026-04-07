@@ -39,6 +39,7 @@ apps:
                 - email
                 - groups
               groupClaim: groups
+              logoutURL: https://authentik.virg.be/application/o/argocd/end-session/
           rbac:
             policy.csv: |
               g, app:argocd, role:admin
