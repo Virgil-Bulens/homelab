@@ -19,6 +19,9 @@ apps:
       - "https://argocd.virg.be/auth/callback"
     launch_url: "https://argocd.virg.be"
     scim: null
+    # ArgoCD config secret references require this label to be visible to the API server
+    secret_labels:
+      app.kubernetes.io/part-of: argocd
     oidc_helm_patch:
       argo-cd:
         configs:

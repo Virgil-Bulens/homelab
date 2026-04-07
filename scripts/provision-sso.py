@@ -111,12 +111,15 @@ def kubeseal(manifest: str, namespace: str, cert_file: str) -> str:
     return result.stdout
 
 
-def make_secret(name: str, namespace: str, data: dict[str, str]) -> str:
+def make_secret(name: str, namespace: str, data: dict[str, str], labels: dict[str, str] | None = None) -> str:
     b64 = {k: base64.b64encode(v.encode()).decode() for k, v in data.items()}
+    metadata: dict = {"name": name, "namespace": namespace}
+    if labels:
+        metadata["labels"] = labels
     manifest = {
         "apiVersion": "v1",
         "kind": "Secret",
-        "metadata": {"name": name, "namespace": namespace},
+        "metadata": metadata,
         "type": "Opaque",
         "data": b64,
     }
@@ -330,7 +333,7 @@ def main():
                 make_secret(f"{name}-oidc", namespace, {
                     "client_id": client_id,
                     "client_secret": client_secret,
-                }),
+                }, labels=app.get("secret_labels")),
                 namespace,
                 cert_file,
             )
