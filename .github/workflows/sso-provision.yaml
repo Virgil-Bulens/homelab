@@ -76,36 +76,26 @@ jobs:
           # Authentik must not restart until the Sealed Secrets controller has unsealed
           # the new *-oidc-env secrets. Strategy: record the current Secret resourceVersions,
           # trigger an ArgoCD hard refresh, then poll until all versions have advanced.
-          echo "Recording current secret resourceVersions..."
-          declare -A OLD_VERSIONS
-          # Track all *-oidc-env secrets plus the admin-env secret
-          SECRETS_TO_WATCH=$(python3 -c "
-          import yaml
-          with open('infrastructure/authentik/apps.yaml') as f:
-              apps = yaml.safe_load(f)['apps']
-          for a in apps: print(a['name'] + '-oidc-env')
-          print('authentik-admin-env')
-          ")
-          for SECRET in $SECRETS_TO_WATCH; do
-            VER=$(kubectl get secret -n authentik "$SECRET" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "0")
-            OLD_VERSIONS[$SECRET]=$VER
-            echo "  $SECRET: resourceVersion=$VER"
-          done
+          # Only poll secrets that were newly created this run (written to .new-secrets by provision script)
+          SECRETS_TO_WATCH=$(cat .new-secrets 2>/dev/null || true)
+          if [[ -z "$SECRETS_TO_WATCH" ]]; then
+            echo "No new secrets to wait for."
+            exit 0
+          fi
 
           echo "Triggering ArgoCD hard refresh for authentik..."
           kubectl annotate application -n argocd authentik argocd.argoproj.io/refresh=hard --overwrite
 
-          echo "Polling for updated secrets (max 5 min)..."
-          for app in "${!OLD_VERSIONS[@]}"; do
-            OLD=${OLD_VERSIONS[$app]}
-            echo "  Waiting for $app to advance past resourceVersion=$OLD..."
+          echo "Polling for new secrets to be unsealed (max 5 min)..."
+          for SECRET in $SECRETS_TO_WATCH; do
+            echo "  Waiting for authentik/$SECRET to appear..."
             for i in $(seq 1 30); do
-              NEW=$(kubectl get secret -n authentik "$app" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "0")
-              if [[ "$NEW" != "$OLD" && "$NEW" != "0" ]]; then
-                echo "  $app updated: resourceVersion=$NEW"
+              VER=$(kubectl get secret -n authentik "$SECRET" -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null || echo "")
+              if [[ -n "$VER" ]]; then
+                echo "  $SECRET unsealed: resourceVersion=$VER"
                 break
               fi
-              echo "    attempt $i: still at $NEW, retrying in 10s..."
+              echo "    attempt $i: not yet, retrying in 10s..."
               sleep 10
             done
           done

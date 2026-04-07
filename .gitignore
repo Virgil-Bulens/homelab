@@ -21,3 +21,4 @@ charts/
 
 # Editors
 .vscode/settings.json
+.new-secrets

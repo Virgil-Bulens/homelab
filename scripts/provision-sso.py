@@ -356,9 +356,12 @@ def main():
 
     try:
         any_new = False
+        new_secrets: list[str] = []  # secret names (in authentik ns) created this run
 
         # Seal admin email (idempotent — skips if file already exists)
-        any_new = ensure_admin_email_secret(cert_file) or any_new
+        if ensure_admin_email_secret(cert_file):
+            any_new = True
+            new_secrets.append("authentik-admin-env")
 
         for app in apps:
             name = app["name"]
@@ -402,6 +405,7 @@ def main():
             print(f"            → {env_path.relative_to(REPO_ROOT)}")
 
             any_new = True
+            new_secrets.append(f"{name}-oidc-env")
 
         # Regenerate blueprint (always — non-credential fields may have changed)
         BLUEPRINTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -420,6 +424,14 @@ def main():
 
     finally:
         os.unlink(cert_file)
+
+    # Write list of newly-created secret names for the CI wait step.
+    # Only secrets written this run need to be polled for unseal.
+    new_secrets_file = REPO_ROOT / ".new-secrets"
+    if any_new:
+        new_secrets_file.write_text("\n".join(new_secrets) + "\n")
+    else:
+        new_secrets_file.unlink(missing_ok=True)
 
     # Exit code 2 signals to CI that new credentials were provisioned and
     # Authentik must re-apply the blueprint (via API call in the workflow).
