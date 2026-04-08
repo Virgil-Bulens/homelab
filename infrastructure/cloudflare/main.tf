@@ -45,7 +45,16 @@ resource "cloudflare_pages_domain" "blog" {
   depends_on = [cloudflare_pages_project.blog]
 }
 
-# Note: blog.virg.be DNS record is created automatically by cloudflare_pages_domain above.
+resource "cloudflare_record" "blog" {
+  zone_id         = var.cloudflare_zone_id
+  name            = "blog"
+  content         = "${cloudflare_pages_project.blog.name}.pages.dev"
+  type            = "CNAME"
+  proxied         = true
+  allow_overwrite = true
+
+  depends_on = [cloudflare_pages_domain.blog]
+}
 
 # Apex CNAME — virg.be itself points to the tunnel for the future landing page.
 # Individual public app records are added alongside each ingress_rule above.
