@@ -28,7 +28,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "homelab" {
 # Blog — static site hosted on Cloudflare Pages, deployed via GitHub Actions.
 resource "cloudflare_pages_project" "blog" {
   account_id        = var.cloudflare_account_id
-  name              = "blog"
+  name              = "virgil-blog"
   production_branch = "main"
 
   build_config {
