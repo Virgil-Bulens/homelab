@@ -2,20 +2,7 @@
 name: Checkov
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "infrastructure/**"
-      - "apps/**"
-      - ".github/workflows/**"
-      - ".checkov.yaml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "infrastructure/**"
-      - "apps/**"
-      - ".checkov.yaml"
-  workflow_dispatch:
+  workflow_dispatch:  # disabled — re-enable by restoring push + pull_request triggers
 
 # Top-level deny-all: each job below declares only what it needs
 permissions:
