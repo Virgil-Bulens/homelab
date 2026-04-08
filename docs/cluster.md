@@ -43,9 +43,6 @@ flowchart TD
         authentik__authentik["authentik"]
         authentik__authentik_server["authentik-server"]
     end
-    subgraph blog__ns["blog"]
-        blog__blog["blog"]
-    end
     subgraph cnpg_system__ns["cnpg‑system"]
         cnpg_system__cloudnative_pg["cloudnative-pg"]
     end
@@ -56,6 +53,5 @@ flowchart TD
     ts_net --> tailscale__homelab_subnet_router
     networking__homelab -->|"argocd.virg.be"| argocd__argocd_server
     networking__homelab -->|"authentik.virg.be"| authentik__authentik_server
-    networking__homelab -->|"blog.virg.be"| blog__blog
     networking__homelab -->|"grafana.virg.be"| monitoring__monitoring_grafana
 ```
