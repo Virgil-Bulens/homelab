@@ -1,0 +1,4 @@
+apiVersion: v2
+name: blog
+version: 1.0.0
+description: Personal blog — Hugo static site served by nginx
