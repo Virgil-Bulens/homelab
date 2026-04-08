@@ -25,6 +25,34 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "homelab" {
   }
 }
 
+# Blog — static site hosted on Cloudflare Pages, deployed via GitHub Actions.
+resource "cloudflare_pages_project" "blog" {
+  account_id        = var.cloudflare_account_id
+  name              = "blog"
+  production_branch = "main"
+
+  build_config {
+    build_command   = "hugo --minify"
+    destination_dir = "public"
+  }
+}
+
+resource "cloudflare_pages_domain" "blog" {
+  account_id   = var.cloudflare_account_id
+  project_name = cloudflare_pages_project.blog.name
+  domain       = "blog.virg.be"
+
+  depends_on = [cloudflare_pages_project.blog]
+}
+
+resource "cloudflare_record" "blog" {
+  zone_id = var.cloudflare_zone_id
+  name    = "blog"
+  content = "${cloudflare_pages_project.blog.name}.pages.dev"
+  type    = "CNAME"
+  proxied = true
+}
+
 # Apex CNAME — virg.be itself points to the tunnel for the future landing page.
 # Individual public app records are added alongside each ingress_rule above.
 resource "cloudflare_record" "apex" {
