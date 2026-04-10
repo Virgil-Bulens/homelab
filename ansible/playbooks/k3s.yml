@@ -70,6 +70,20 @@
     control_plane_ip: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}"
     k3s_token: "{{ hostvars[groups['control_plane'][0]]['k3s_token'] }}"
   tasks:
+    - name: Install Longhorn prerequisites
+      ansible.builtin.apt:
+        name:
+          - open-iscsi
+          - nfs-common
+        state: present
+        update_cache: true
+
+    - name: Enable and start iscsid
+      ansible.builtin.systemd:
+        name: iscsid
+        enabled: true
+        state: started
+
     - name: Install k3s agent with AI taint
       ansible.builtin.shell:
         cmd: |
