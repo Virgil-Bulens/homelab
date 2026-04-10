@@ -35,8 +35,9 @@ spec:
                 echo "Model already present, skipping download."
               else
                 echo "Downloading {{ .Values.llama.model.filename }} (~27 GB) — this will take a while."
-                wget -q --show-progress \
-                  -O /models/{{ .Values.llama.model.filename }} \
+                apk add --no-cache curl
+                curl -L --progress-bar \
+                  -o /models/{{ .Values.llama.model.filename }} \
                   "{{ .Values.llama.model.url }}"
               fi
           volumeMounts:
