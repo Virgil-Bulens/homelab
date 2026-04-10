@@ -32,6 +32,9 @@ See [cluster diagram](docs/cluster.md) — auto-generated from `infrastructure/`
 | Secrets | Sealed Secrets |
 | CI | GitHub Actions |
 | Identity / SSO | Authentik |
+| AI inference | llama.cpp server (Gemma 4 26B A4B) |
+| AI frontend | Open WebUI |
+| Web search | SearXNG |
 
 ## Repository layout
 
@@ -56,7 +59,8 @@ infrastructure/       # Helm values, Kubernetes manifests, and Terraform per com
   monitoring/
   longhorn/
   authentik/
-apps/                 # Manifests for self-hosted applications
+  ai/                 # llama.cpp server + SearXNG + Open WebUI
+apps/                 # ArgoCD Applications for self-hosted apps
 docs/                 # Architecture notes and ADRs
 .github/
   workflows/          # GitHub Actions CI pipelines
