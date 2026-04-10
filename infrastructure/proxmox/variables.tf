@@ -106,3 +106,34 @@ variable "worker_macs" {
   type        = list(string)
   default     = ["02:ab:00:00:00:02", "02:ab:00:00:00:03"]
 }
+
+# AI worker
+
+variable "ai_worker_ip" {
+  description = "Static IP for the AI worker node"
+  type        = string
+  default     = "192.168.2.13"
+}
+
+variable "ai_worker_mac" {
+  description = "MAC address for the AI worker VM (locally administered)"
+  type        = string
+  default     = "02:ab:00:00:00:04"
+}
+
+variable "ai_worker_cores" {
+  type    = number
+  default = 4
+}
+
+variable "ai_worker_memory" {
+  description = "Memory in MB — fixed, no ballooning; sized for 26B Q8 model (~29 GB) + OS overhead"
+  type        = number
+  default     = 36864
+}
+
+variable "ai_worker_disk_size" {
+  description = "Disk size in GB"
+  type        = number
+  default     = 40
+}

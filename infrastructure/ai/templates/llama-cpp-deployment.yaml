@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-cpp
+  namespace: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llama-cpp
+  template:
+    metadata:
+      labels:
+        app: llama-cpp
+    spec:
+      # Pin to the dedicated AI worker; toleration required to schedule on tainted node.
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.llama.nodeName }}
+      tolerations:
+        - key: ai
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      initContainers:
+        - name: download-model
+          image: alpine:3.21
+          command:
+            - sh
+            - -c
+            - |
+              if [ -f /models/{{ .Values.llama.model.filename }} ]; then
+                echo "Model already present, skipping download."
+              else
+                echo "Downloading {{ .Values.llama.model.filename }} (~27 GB) — this will take a while."
+                wget -q --show-progress \
+                  -O /models/{{ .Values.llama.model.filename }} \
+                  "{{ .Values.llama.model.url }}"
+              fi
+          volumeMounts:
+            - name: model
+              mountPath: /models
+          resources:
+            requests:
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+      containers:
+        - name: llama-cpp
+          image: {{ .Values.llama.image }}
+          args:
+            - --model
+            - /models/{{ .Values.llama.model.filename }}
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8080"
+            - --threads
+            - "{{ .Values.llama.threads }}"
+            - --ctx-size
+            - "{{ .Values.llama.ctxSize }}"
+            - --parallel
+            - "1"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: model
+              mountPath: /models
+          resources:
+            requests:
+              memory: 30Gi
+              cpu: "3"
+            limits:
+              memory: 36Gi
+              cpu: "4"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: model
+          persistentVolumeClaim:
+            claimName: llama-model

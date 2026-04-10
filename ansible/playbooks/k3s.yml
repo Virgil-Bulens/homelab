@@ -59,3 +59,25 @@
             INSTALL_K3S_EXEC="agent --node-ip={{ ansible_host }}" \
             sh -
         creates: /usr/local/bin/k3s
+
+# Play 4: Install k3s agents on AI workers with the ai=true:NoSchedule taint.
+# Runs after Play 2 (token fetch) so k3s_token is available as a hostvars fact.
+# The taint is baked in at join time — no post-join kubectl taint needed.
+- name: Install k3s AI workers
+  hosts: ai_workers
+  become: true
+  vars:
+    control_plane_ip: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}"
+    k3s_token: "{{ hostvars[groups['control_plane'][0]]['k3s_token'] }}"
+  tasks:
+    - name: Install k3s agent with AI taint
+      ansible.builtin.shell:
+        cmd: |
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="{{ k3s_version }}" \
+            K3S_URL="https://{{ control_plane_ip }}:6443" \
+            K3S_TOKEN="{{ k3s_token }}" \
+            INSTALL_K3S_EXEC="agent \
+              --node-ip={{ ansible_host }} \
+              --node-taint ai=true:NoSchedule" \
+            sh -
+        creates: /usr/local/bin/k3s

@@ -51,6 +51,19 @@ apps:
             policy.csv: |
               g, app:argocd, role:admin
 
+  - name: open-webui
+    namespace: ai
+    chart_path: ai  # infrastructure/ai/templates/open-webui-oidc-sealed.yaml
+    display_name: Open WebUI
+    group: "app:open-webui"
+    redirect_uris:
+      - "https://chat.virg.be/oauth/oidc/callback"
+    post_logout_redirect_uri: "https://chat.virg.be"
+    launch_url: "https://chat.virg.be"
+    scim: null
+    # No oidc_helm_patch — Open WebUI reads OAUTH_CLIENT_ID / OAUTH_CLIENT_SECRET
+    # directly from the SealedSecret via env vars in the Deployment.
+
   - name: grafana
     namespace: monitoring
     chart_path: monitoring  # infrastructure/<chart_path>/templates/<name>-oidc-sealed.yaml

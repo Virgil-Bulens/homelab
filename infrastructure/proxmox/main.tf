@@ -124,3 +124,68 @@ resource "proxmox_virtual_environment_vm" "worker" {
     ignore_changes = [clone, initialization, vga, serial_device]
   }
 }
+
+# Dedicated AI worker — separate resource (not part of the worker count) because it needs
+# different RAM/CPU specs and carries the ai=true:NoSchedule taint at the k3s level.
+resource "proxmox_virtual_environment_vm" "ai_worker" {
+  name      = "k3s-ai-worker-1"
+  node_name = var.proxmox_node
+  vm_id     = 220
+
+  clone {
+    vm_id     = var.template_vm_id
+    node_name = var.proxmox_node
+    full      = true
+  }
+
+  agent {
+    enabled = true
+  }
+
+  cpu {
+    cores = var.ai_worker_cores
+    type  = "host"
+  }
+
+  memory {
+    dedicated = var.ai_worker_memory
+  }
+
+  disk {
+    datastore_id = var.datastore
+    interface    = "scsi0"
+    size         = var.ai_worker_disk_size
+  }
+
+  network_device {
+    bridge      = "vmbr0"
+    model       = "virtio"
+    mac_address = var.ai_worker_mac
+  }
+
+  initialization {
+    datastore_id = var.datastore
+
+    ip_config {
+      ipv4 {
+        address = "${var.ai_worker_ip}/24"
+        gateway = var.network_gateway
+      }
+    }
+
+    user_account {
+      username = "admin"
+      keys     = [var.ssh_public_key]
+    }
+
+    dns {
+      servers = [var.dns_server]
+    }
+  }
+
+  on_boot = true
+
+  lifecycle {
+    ignore_changes = [clone, initialization, vga, serial_device]
+  }
+}

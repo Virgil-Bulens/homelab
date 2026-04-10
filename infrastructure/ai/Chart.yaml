@@ -1,0 +1,5 @@
+apiVersion: v2
+name: ai
+description: Self-hosted AI stack — llama.cpp inference server, SearXNG web search, Open WebUI frontend
+type: application
+version: 0.1.0

@@ -1,0 +1,21 @@
+llama:
+  image: ghcr.io/ggerganov/llama.cpp:server
+  # Unsloth Dynamic Q8 — best quality single-file GGUF for this model
+  model:
+    filename: gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
+    url: https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
+  # Match physical core count of i7-1165G7; HT does not improve compute-bound inference
+  threads: 4
+  ctxSize: 8192
+  storage: 35Gi
+  # Pin to the tainted AI worker node
+  nodeName: k3s-ai-worker-1
+
+searxng:
+  image: searxng/searxng:latest
+
+openwebui:
+  image: ghcr.io/open-webui/open-webui:main
+  storage: 2Gi
+  hostname: chat.virg.be
+  authentikIssuer: https://authentik.virg.be/application/o/open-webui/

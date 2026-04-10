@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      # No toleration — schedules on regular workers, not the AI node.
+      containers:
+        - name: open-webui
+          image: {{ .Values.openwebui.image }}
+          ports:
+            - containerPort: 8080
+          env:
+            # LLM backend: llama.cpp OpenAI-compatible API
+            - name: OPENAI_API_BASE_URL
+              value: http://llama-cpp:8080/v1
+            - name: OPENAI_API_KEY
+              value: llama-cpp
+            # Disable Ollama (Open WebUI defaults to Ollama mode)
+            - name: OLLAMA_BASE_URL
+              value: ""
+            # Web search via SearXNG — json format required
+            - name: ENABLE_RAG_WEB_SEARCH
+              value: "true"
+            - name: RAG_WEB_SEARCH_ENGINE
+              value: searxng
+            - name: SEARXNG_QUERY_URL
+              value: http://searxng:8080/search?q=<query>&format=json
+            # OIDC auth — Authentik as sole identity provider
+            - name: ENABLE_LOGIN_FORM
+              value: "false"
+            - name: ENABLE_OAUTH_SIGNUP
+              value: "true"
+            - name: OAUTH_PROVIDER_NAME
+              value: Authentik
+            - name: OPENID_PROVIDER_URL
+              value: {{ .Values.openwebui.authentikIssuer }}
+            - name: OAUTH_SCOPES
+              value: openid profile email
+            - name: OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc
+                  key: client_id
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc
+                  key: client_secret
+            # General
+            - name: WEBUI_URL
+              value: https://{{ .Values.openwebui.hostname }}
+            - name: WEBUI_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-secret
+                  key: WEBUI_SECRET_KEY
+          volumeMounts:
+            - name: data
+              mountPath: /app/backend/data
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 200m
+            limits:
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: open-webui-data

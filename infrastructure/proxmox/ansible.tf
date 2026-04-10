@@ -20,3 +20,14 @@ resource "ansible_host" "workers" {
     k3s_role     = "agent"
   }
 }
+
+resource "ansible_host" "ai_worker" {
+  name   = proxmox_virtual_environment_vm.ai_worker.name
+  groups = ["ai_workers", "k3s"]
+
+  variables = {
+    ansible_host = var.ai_worker_ip
+    ansible_user = "admin"
+    k3s_role     = "agent"
+  }
+}

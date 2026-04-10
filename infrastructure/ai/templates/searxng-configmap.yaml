@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-config
+  namespace: ai
+data:
+  settings.yml: |
+    use_default_settings: true
+    server:
+      # secret_key is injected via SEARXNG_SECRET env var from the searxng-secret SealedSecret.
+      limiter: false
+      image_proxy: false
+    search:
+      # json format is required for Open WebUI web search integration.
+      formats:
+        - html
+        - json

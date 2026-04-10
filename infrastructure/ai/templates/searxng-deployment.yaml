@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searxng
+  namespace: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searxng
+  template:
+    metadata:
+      labels:
+        app: searxng
+    spec:
+      # No toleration for ai=true:NoSchedule — schedules on regular workers only.
+      # SearXNG is stateless and does not belong on the memory-reserved AI node.
+      containers:
+        - name: searxng
+          image: {{ .Values.searxng.image }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SEARXNG_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: searxng-secret
+                  key: SEARXNG_SECRET
+          volumeMounts:
+            - name: config
+              mountPath: /etc/searxng/settings.yml
+              subPath: settings.yml
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: searxng-config
