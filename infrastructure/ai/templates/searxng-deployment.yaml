@@ -26,10 +26,25 @@ spec:
                 secretKeyRef:
                   name: searxng-secret
                   key: SEARXNG_SECRET
+            # Override Kubernetes service-discovery env var (SEARXNG_PORT=tcp://...)
+            # which SearXNG's entrypoint passes verbatim to granian --port.
+            - name: SEARXNG_PORT
+              value: "8080"
           volumeMounts:
-            - name: config
-              mountPath: /etc/searxng/settings.yml
-              subPath: settings.yml
+            # Mount to /etc/searxng/settings.yml.bak and point SEARXNG_SETTINGS_PATH
+            # to avoid chown failure on the read-only ConfigMap-mounted file.
+            # Instead, mount the config into an init-writable location via emptyDir.
+            - name: config-rw
+              mountPath: /etc/searxng
+      initContainers:
+        - name: copy-config
+          image: busybox
+          command: ["sh", "-c", "cp /config-ro/settings.yml /etc/searxng/settings.yml && chown 977:977 /etc/searxng/settings.yml"]
+          volumeMounts:
+            - name: config-ro
+              mountPath: /config-ro
+            - name: config-rw
+              mountPath: /etc/searxng
           resources:
             requests:
               memory: 256Mi
@@ -37,6 +52,8 @@ spec:
             limits:
               memory: 512Mi
       volumes:
-        - name: config
+        - name: config-ro
           configMap:
             name: searxng-config
+        - name: config-rw
+          emptyDir: {}
