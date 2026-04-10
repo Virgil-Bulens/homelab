@@ -11,5 +11,8 @@ authentik:
           name: argocd-oidc-env
           optional: true
       - secretRef:
+          name: open-webui-oidc-env
+          optional: true
+      - secretRef:
           name: grafana-oidc-env
           optional: true
