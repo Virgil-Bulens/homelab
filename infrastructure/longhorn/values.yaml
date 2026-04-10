@@ -11,6 +11,20 @@ longhorn:
     # Refuse to schedule new volumes when less than 10% disk space remains
     storageMinimalAvailablePercentage: 10
 
+  longhornManager:
+    tolerations:
+      - key: ai
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+
+  longhornDriver:
+    tolerations:
+      - key: ai
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+
   persistence:
     # Not the default StorageClass — local-path remains default for system workloads.
     # Stateful apps (Prometheus, Loki, Grafana, databases) must explicitly set
