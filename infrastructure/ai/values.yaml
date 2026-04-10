@@ -1,5 +1,5 @@
 llama:
-  image: ghcr.io/ggerganov/llama.cpp:server
+  image: ghcr.io/ggml-org/llama.cpp:server  # project moved to ggml-org org
   # Unsloth Dynamic Q8 — best quality single-file GGUF for this model
   model:
     filename: gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
