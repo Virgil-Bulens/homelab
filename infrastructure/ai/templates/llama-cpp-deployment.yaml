@@ -5,6 +5,8 @@ metadata:
   namespace: ai
 spec:
   replicas: 1
+  strategy:
+    type: Recreate  # RWO volume + resource-heavy pod: must terminate old before starting new
   selector:
     matchLabels:
       app: llama-cpp
