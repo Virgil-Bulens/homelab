@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: {{ .Values.llama.storageClass }}
   resources:
     requests:
       storage: {{ .Values.llama.storage }}
