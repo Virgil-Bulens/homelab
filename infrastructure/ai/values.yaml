@@ -1,10 +1,10 @@
 llama:
   image: ghcr.io/ggml-org/llama.cpp:server  # project moved to ggml-org org
-  # Gemma 4 E4B (4B dense) — Unsloth Dynamic Q4 for ~6 tok/s on i7-1165G7
-  # Switched from 26B MoE Q8 (too slow on CPU — ~1 tok/s due to memory bandwidth)
+  # Gemma 3 4B — no Sliding Window Attention, efficient CPU inference (~10 tok/s on i7-1165G7)
+  # Gemma 4 E4B dropped: SWA checkpoint thrash made it 0.1 tok/s on CPU
   model:
-    filename: gemma-4-E4B-it-UD-Q4_K_XL.gguf
-    url: https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-UD-Q4_K_XL.gguf
+    filename: gemma-3-4b-it-UD-Q4_K_XL.gguf
+    url: https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-UD-Q4_K_XL.gguf
   # Match physical core count of i7-1165G7; HT does not improve compute-bound inference
   threads: 4
   ctxSize: 8192
