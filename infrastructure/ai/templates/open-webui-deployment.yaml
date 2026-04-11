@@ -38,6 +38,12 @@ spec:
               value: searxng
             - name: SEARXNG_QUERY_URL
               value: http://searxng:8080/search?q=<query>&format=json
+            - name: RAG_WEB_SEARCH_RESULT_COUNT
+              value: "5"
+            - name: RAG_WEB_SEARCH_CONCURRENT_REQUESTS
+              value: "10"
+            - name: ENABLE_SEARCH_QUERY_GENERATION
+              value: "true"
             # OIDC auth — Authentik as sole identity provider
             - name: ENABLE_LOGIN_FORM
               value: "false"
