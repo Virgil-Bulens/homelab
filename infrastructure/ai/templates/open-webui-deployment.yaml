@@ -5,6 +5,9 @@ metadata:
   namespace: ai
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
+    rollingUpdate: null  # required with ServerSideApply — omitting causes sync conflict
   selector:
     matchLabels:
       app: open-webui
