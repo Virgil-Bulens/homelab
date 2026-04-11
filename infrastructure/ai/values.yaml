@@ -16,7 +16,7 @@ searxng:
   image: searxng/searxng:latest
 
 openwebui:
-  image: ghcr.io/open-webui/open-webui:main
+  image: ghcr.io/open-webui/open-webui:v0.8.12
   storage: 2Gi
   hostname: chat.virg.be
   authentikIssuer: https://authentik.virg.be/application/o/open-webui/
