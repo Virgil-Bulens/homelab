@@ -43,7 +43,8 @@ spec:
             - name: OAUTH_PROVIDER_NAME
               value: Authentik
             - name: OPENID_PROVIDER_URL
-              value: {{ .Values.openwebui.authentikIssuer }}
+              # Must point directly to the discovery doc — authlib doesn't follow the 302 Authentik issues on the base issuer URL
+              value: {{ .Values.openwebui.authentikIssuer }}.well-known/openid-configuration
             - name: OAUTH_SCOPES
               value: openid profile email
             - name: OAUTH_CLIENT_ID
