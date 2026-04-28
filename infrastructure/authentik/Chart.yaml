@@ -5,5 +5,5 @@ version: 1.0.0
 description: Authentik identity provider — SSO for homelab apps
 dependencies:
   - name: authentik
-    version: "2026.2.1"
+    version: "2026.2.2"
     repository: https://charts.goauthentik.io
