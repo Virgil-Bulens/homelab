@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Use a PAT so the push-back commit triggers downstream workflows.
           # GITHUB_TOKEN pushes are ignored by Actions to prevent loops.
