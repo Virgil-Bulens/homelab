@@ -26,7 +26,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install python-hcl2
         run: pip install python-hcl2
@@ -47,7 +47,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Python dependencies
         run: pip install pyyaml python-hcl2
