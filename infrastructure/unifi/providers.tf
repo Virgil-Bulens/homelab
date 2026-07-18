@@ -18,7 +18,7 @@ terraform {
   required_providers {
     unifi = {
       source  = "ubiquiti-community/unifi"
-      version = "~> 0.41" # run terraform plan/apply with -parallelism=1 (provider has concurrent map race)
+      version = "~> 0.55" # run terraform plan/apply with -parallelism=1 (provider has concurrent map race)
     }
   }
 }
