@@ -5,5 +5,5 @@ version: 1.0.0
 description: CloudNativePG operator — manages PostgreSQL clusters as Kubernetes resources
 dependencies:
   - name: cloudnative-pg
-    version: "0.28.0"
+    version: "0.29.0"
     repository: https://cloudnative-pg.github.io/charts
